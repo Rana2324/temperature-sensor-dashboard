@@ -1,0 +1,18 @@
+{
+    "sensors": {
+        "readingInterval": 1000,
+        "sensorDelay": 100,
+        "temperatureThresholds": {
+            "high": 70,
+            "low": 20
+        },
+        "i2cDevicePath": "/dev/i2c-0"
+    },
+    "mongodb": {
+        "uri": "mongodb://localhost:27017/temperature_db"
+    },
+    "server": {
+        "port": 3000,
+        "host": "localhost"
+    }
+}

@@ -1,0 +1,87 @@
+/* Table styles */
+.table-wrapper {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    border: 1px solid #e0e0e0;
+    position: relative;
+    scroll-behavior: smooth; /* Add smooth scrolling */
+}
+
+/* Special styles for alert, settings and personality tables to make scrollbars more prominent when data increases */
+.table-wrapper.alert-table, 
+.table-wrapper.settings-table, 
+.table-wrapper.personality-table {
+    max-height: 200px; /* Smaller default height */
+    transition: max-height 0.3s ease; /* Smooth height transition */
+}
+
+/* When tables have more data, increase the height */
+.table-wrapper.alert-table.expanded, 
+.table-wrapper.settings-table.expanded, 
+.table-wrapper.personality-table.expanded {
+    max-height: 400px; /* More space for expanded content */
+}
+
+/* Scrollbar indicator for tables with more content */
+.table-wrapper::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 15px;
+    background: linear-gradient(to top, rgba(255,255,255,0.9), rgba(255,255,255,0));
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.table-wrapper.has-more-content::after {
+    opacity: 1; /* Show gradient when there's more content */
+}
+
+/* Ensure scrollbars are always visible on supported browsers */
+.table-wrapper {
+    scrollbar-width: thin; /* Firefox */
+    scrollbar-color: #cbd5e0 #f1f1f1; /* Firefox */
+}
+
+/* Scrollbar styling for WebKit browsers */
+.table-wrapper::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+    background-color: #f1f1f1;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+    background-color: #cbd5e0;
+    border-radius: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb:hover {
+    background-color: #a0aec0;
+}
+
+/* Expand button for tables */
+.expand-table-btn {
+    display: inline-block;
+    margin-left: 10px;
+    font-size: 12px;
+    color: #4a90e2;
+    cursor: pointer;
+    user-select: none;
+}
+
+.expand-table-btn:hover {
+    text-decoration: underline;
+}
+
+/* Section headers with expand toggle */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
