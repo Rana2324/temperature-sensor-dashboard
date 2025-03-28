@@ -356,7 +356,7 @@ export const getSettings = async (req, res) => {
             content: formatSettingContent(setting)
         }));
 
-        console.log('Formatted settings:', formattedSettings);
+        // console.log('Formatted settings:', formattedSettings);
         res.json(formattedSettings);
     } catch (error) {
         console.error('Error in getSettings:', error);
@@ -387,7 +387,7 @@ export const getPersonality = async (req, res) => {
             content: formatPersonalityContent(p)
         }));
 
-        console.log('Formatted personality:', formattedPersonality);
+        // console.log('Formatted personality:', formattedPersonality);
         res.json(formattedPersonality);
     } catch (error) {
         console.error('Error in getPersonality:', error);
@@ -430,29 +430,44 @@ export const createCustomAlert = async (req, res) => {
         
         // Format the event description based on the event type
         let eventDescription = '';
+        const isRecovery = eventType.includes('_RECOVERY');
+        const baseEventType = isRecovery ? eventType.replace('_RECOVERY', '') : eventType;
         
-        switch (eventType) {
+        switch (baseEventType) {
             case 'THRESHOLD':
                 eventDescription = `しきい値変更：高=${details.threshold ? details.threshold.high : ''}°C, 低=${details.threshold ? details.threshold.low : ''}°C`;
+                if (isRecovery) {
+                    eventDescription = `しきい値変更に関するアラート回復`;
+                }
                 break;
             case 'OFFSET':
                 const sign = details.offset > 0 ? '+' : '';
                 eventDescription = `温度オフセット：${sign}${details.offset}°C`;
+                if (isRecovery) {
+                    eventDescription = `温度オフセットに関するアラート回復`;
+                }
                 break;
             case 'SENSOR_ERROR':
                 eventDescription = `センサーエラー：${details.message || '不明なエラー'}`;
+                if (isRecovery) {
+                    eventDescription = `センサーエラー回復：${details.message || '不明なエラー'}`;
+                }
                 break;
             case 'ABNORMAL_DATA':
-                if (details.value > 70) {
-                    eventDescription = `温度異常：${details.value.toFixed(1)}°C (70°C以上)`;
-                } else if (details.value < 20) {
-                    eventDescription = `温度異常：${details.value.toFixed(1)}°C (20°C以下)`;
+                if (details.value > config.sensors.temperatureThresholds.high) {
+                    eventDescription = `温度異常：${details.value.toFixed(1)}°C (${config.sensors.temperatureThresholds.high}°C以上)`;
+                } else if (details.value < config.sensors.temperatureThresholds.low) {
+                    eventDescription = `温度異常：${details.value.toFixed(1)}°C (${config.sensors.temperatureThresholds.low}°C以下)`;
                 } else {
                     eventDescription = `温度異常：${details.value.toFixed(1)}°C`;
                 }
+                
+                if (isRecovery) {
+                    eventDescription = `温度異常回復：${details.value.toFixed(1)}°C (通常範囲:${config.sensors.temperatureThresholds.low}°C～${config.sensors.temperatureThresholds.high}°C)`;
+                }
                 break;
             default:
-                eventDescription = details.message || 'アラート発生';
+                eventDescription = details.message || (isRecovery ? 'アラート回復' : 'アラート発生');
         }
         
         const alert = new Alert({
@@ -472,7 +487,8 @@ export const createCustomAlert = async (req, res) => {
             date: moment(alert.date).format('YYYY/MM/DD'),
             time: moment(alert.date).format('HH:mm:ss.SSS'),
             event: alert.event,
-            eventType: alert.eventType
+            eventType: alert.eventType,
+            isRecovery
         });
         
         res.status(201).json({
@@ -482,7 +498,8 @@ export const createCustomAlert = async (req, res) => {
                 date: moment(alert.date).format('YYYY/MM/DD'),
                 time: moment(alert.date).format('HH:mm:ss.SSS'),
                 event: alert.event,
-                eventType: alert.eventType
+                eventType: alert.eventType,
+                isRecovery
             }
         });
     } catch (error) {

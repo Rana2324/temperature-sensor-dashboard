@@ -18,7 +18,10 @@ const AlertSchema = new mongoose.Schema({
     },
     eventType: {
         type: String,
-        enum: ['THRESHOLD', 'OFFSET', 'SENSOR_ERROR', 'ABNORMAL_DATA', 'OTHER'],
+        enum: [
+            'THRESHOLD', 'OFFSET', 'SENSOR_ERROR', 'ABNORMAL_DATA', 'OTHER',
+            'THRESHOLD_RECOVERY', 'OFFSET_RECOVERY', 'SENSOR_ERROR_RECOVERY', 'ABNORMAL_DATA_RECOVERY', 'OTHER_RECOVERY'
+        ],
         default: 'OTHER'
     },
     details: {

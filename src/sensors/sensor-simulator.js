@@ -18,6 +18,12 @@ class SensorSimulator {
             { type: 'OFFSET', details: { offset: 1.5 }}
         ];
         this.simulateErrorCounter = 0;
+        // Track alert states for recovery notifications
+        this.activeAlerts = {
+            temperature: false,
+            sensorError: false,
+            errorType: null
+        };
         console.log(`Initializing ${sensorId}`);
     }
 
@@ -33,6 +39,12 @@ class SensorSimulator {
             // Report a simulated error
             this.reportAlert(errorPattern.type, errorPattern.details);
             
+            // Track the current error state
+            if (errorPattern.type === 'SENSOR_ERROR') {
+                this.activeAlerts.sensorError = true;
+                this.activeAlerts.errorType = errorPattern.details.message;
+            }
+            
             // For some error types, return abnormal temperature data
             if (errorPattern.type === 'OFFSET') {
                 const baseTemp = 25 + Math.random() * 5;
@@ -42,6 +54,13 @@ class SensorSimulator {
                 }
                 return pixels;
             }
+        } else if (this.simulateErrorCounter % 20 === 0 && this.activeAlerts.sensorError) {
+            // Simulate sensor error recovery after 5 more cycles
+            this.reportAlertRecovery('SENSOR_ERROR', { 
+                message: `${this.activeAlerts.errorType} 復旧` 
+            });
+            this.activeAlerts.sensorError = false;
+            this.activeAlerts.errorType = null;
         }
         
         // Decide whether to generate normal or abnormal temperature
@@ -58,6 +77,7 @@ class SensorSimulator {
                     value: baseTemp,
                     threshold: config.sensors.temperatureThresholds.high
                 });
+                this.activeAlerts.temperature = true;
             } else {
                 baseTemp = 15 - Math.random() * 10;   // Low temp < 20°C
                 // Report abnormal data alert
@@ -65,10 +85,20 @@ class SensorSimulator {
                     value: baseTemp,
                     threshold: config.sensors.temperatureThresholds.low
                 });
+                this.activeAlerts.temperature = true;
             }
         } else {
             // Generate a normal temperature
             baseTemp = 25 + Math.random() * 5;
+            
+            // If there was an active temperature alert, report recovery
+            if (this.activeAlerts.temperature) {
+                this.reportAlertRecovery('ABNORMAL_DATA', { 
+                    value: baseTemp,
+                    thresholds: config.sensors.temperatureThresholds
+                });
+                this.activeAlerts.temperature = false;
+            }
         }
         
         const pixels = [];
@@ -90,6 +120,22 @@ class SensorSimulator {
             console.log(`${this.sensorId} reported alert: ${eventType}`);
         } catch (error) {
             console.error(`${this.sensorId} failed to report alert:`, error.message);
+        }
+    }
+
+    async reportAlertRecovery(eventType, details) {
+        try {
+            await axios.post('http://localhost:3000/api/custom-alert', {
+                sensorId: this.sensorId,
+                eventType: `${eventType}_RECOVERY`,
+                details: {
+                    ...details,
+                    recovery: true
+                }
+            });
+            console.log(`${this.sensorId} reported alert recovery: ${eventType}`);
+        } catch (error) {
+            console.error(`${this.sensorId} failed to report alert recovery:`, error.message);
         }
     }
 
