@@ -1,32 +1,35 @@
 import mongoose from 'mongoose';
 
-const AlertSchema = new mongoose.Schema({
+const alertSchema = new mongoose.Schema({
     sensorId: {
         type: String,
         required: true
     },
     date: {
         type: Date,
+        required: true,
         default: Date.now
     },
-    event: {
+    alertReason: {
         type: String,
         required: true
     },
-    temperature: {
-        type: Number
-    },
-    eventType: {
+    status: {
         type: String,
-        enum: [
-            'THRESHOLD', 'OFFSET', 'SENSOR_ERROR', 'ABNORMAL_DATA', 'OTHER',
-            'THRESHOLD_RECOVERY', 'OFFSET_RECOVERY', 'SENSOR_ERROR_RECOVERY', 'ABNORMAL_DATA_RECOVERY', 'OTHER_RECOVERY'
-        ],
-        default: 'OTHER'
+        enum: ['active', 'recovered'],
+        required: true
     },
-    details: {
-        type: mongoose.Schema.Types.Mixed
+    createdAt: {
+        type: Date,
+        default: Date.now
+    },
+    updatedAt: {
+        type: Date,
+        default: Date.now
     }
+}, {
+    timestamps: true,
+    versionKey: false
 });
 
-export default mongoose.model('Alert', AlertSchema);
+export default mongoose.model('Alert', alertSchema, 'alerts_log');

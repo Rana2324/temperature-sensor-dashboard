@@ -1,34 +1,30 @@
 import mongoose from 'mongoose';
 
 const sensorDataSchema = new mongoose.Schema({
-    sensorId: {
+    sensor_id: {
         type: String,
         required: true
     },
-    acquisitionDate: {
+    date: {
         type: String,
         required: true
     },
-    acquisitionTime: {
+    time: {
         type: String,
         required: true
     },
-    temperatures: [{
+    temperature_data: [{
         type: Number,
         required: true
     }],
-    averageTemperature: {
+    alert_flag: {
         type: Number,
+        default: 0
+    },
+    created_at: {
+        type: String,
         required: true
-    },
-    isAbnormal: {
-        type: Boolean,
-        default: false
-    },
-    timestamp: {
-        type: Date,
-        default: Date.now
     }
 });
 
-export default mongoose.model('SensorData', sensorDataSchema);
+export default mongoose.model('SensorData', sensorDataSchema, 'temperature_readings');

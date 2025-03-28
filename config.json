@@ -11,7 +11,8 @@
     "mongodb": {
         "uri": "mongodb+srv://AIBC:2324@clustertest.fsaqy.mongodb.net/?retryWrites=true&w=majority&appName=ClusterTest",
         "dbName": "sensorData",
-        "collectionName": "temperatureReadings"
+        "temperatureCollection": "temperature_readings",
+        "alertsCollection": "alerts_log"
     },
     "server": {
         "port": 3000,

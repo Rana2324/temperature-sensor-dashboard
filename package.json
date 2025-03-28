@@ -7,7 +7,9 @@
   "scripts": {
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
-    "simulator": "node src/sensors/sensor-simulator.js"
+    "simulator": "node src/sensors/sensor-simulator.js",
+    "insert-test-data": "node src/scripts/insert-test-data.js",
+    "simulate-alerts": "node src/scripts/simulate-alerts.js"
   },
   "dependencies": {
     "axios": "^1.8.4",

@@ -1,6 +1,6 @@
 <div class="container">
   <h1>温度センサー監視システム</h1>
-  
+
 
   <!-- Tab Navigation -->
   <div class="tab-container">
@@ -19,155 +19,158 @@
     <div id="sensorTab" class="tab-content">
       <div class="sensor-panels">
         <% latestReadings.forEach((sensor, index) => { %>
-          <div class="sensor-data-section" id="sensor-<%= sensor.sensorId %>">
-            <div class="sensor-header">
-              <h2 class="sensor-title">
-                <span class="sensor-icon">🌡️</span>
-                <%= sensor.sensorId %> センサー情報
-              </h2>
-              <div class="sensor-status <%= sensor.isActive ? 'active' : 'inactive' %>">
-                <%= sensor.isActive ? '稼働中' : '停止中' %>
-              </div>
+        <div class="sensor-data-section" id="sensor-<%= sensor.sensorId %>">
+          <div class="sensor-header">
+            <h2 class="sensor-title">
+              <span class="sensor-icon">🌡️</span>
+              <%= sensor.sensorId %> センサー情報
+            </h2>
+            <div class="sensor-status <%= sensor.isActive ? 'active' : 'inactive' %>">
+              <%= sensor.isActive ? '稼働中' : '停止中' %>
             </div>
-            
-            <!-- Raw Data History -->
-            <div class="sensor-data-section">
-             
-              <div class="section-controls">
-                <h3>取得データ履歴 <span class="data-count">(最新100件)</span></h3>
-                <button class="refresh-btn" onclick="refreshData('<%= sensor.sensorId %>')">
-                  <span class="refresh-icon">🔄</span>
-                </button>
-              </div>
-              <div class="table-wrapper">
-                <table class="data-table">
-                  <thead>
-                    <tr>
-                      <th>年月日</th>
-                      <th>時刻</th>
-                      <% for(let i = 1; i <= 16; i++) { %>
-                      <th><%= i %></th>
-                      <% } %>
-                      <th>平均温度</th>
-                      <th>状態</th>
-                    </tr>
-                  </thead>
-                  <tbody id="tbody-<%= sensor.sensorId %>">
-                    <% sensor.data.forEach(data => { %>
-                    <tr class="<%= data.isAbnormal ? 'table-danger' : '' %>">
-                      <td><%= data.acquisitionDate %></td>
-                      <td><%= data.acquisitionTime %></td>
-                      <% data.temperatures.forEach(temp => { %>
-                      <td><%= temp %></td>
-                      <% }); %>
-                      <td><%= data.averageTemperature?.toFixed(1) %> °C</td>
-                      <td><%= data.isAbnormal ? '異常' : '正常' %></td>
-                    </tr>
+          </div>
+
+          <!-- Raw Data History -->
+          <div class="sensor-data-section">
+
+            <div class="section-controls">
+              <h3>取得データ履歴 <span class="data-count">(最新100件)</span></h3>
+              <button class="refresh-btn" onclick="refreshData('<%= sensor.sensorId %>')">
+                <span class="refresh-icon">🔄</span>
+              </button>
+            </div>
+            <div class="table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>年月日</th>
+                    <th>時刻</th>
+                    <% for(let i = 1; i <= 16; i++) { %>
+                    <th><%= i %></th>
+                    <% } %>
+                    <th>平均温度</th>
+                    <th>状態</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody-<%= sensor.sensorId %>">
+                  <% sensor.data.forEach(data => { %>
+                  <tr class="<%= data.isAbnormal ? 'table-danger' : '' %>">
+                    <td><%= data.acquisitionDate %></td>
+                    <td><%= data.acquisitionTime %></td>
+                    <% data.temperatures.forEach(temp => { %>
+                    <td><%= temp %></td>
                     <% }); %>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            
-            <!-- Alert History -->
-            <div class="section-header history-section-header">
-              <h3>アラート履歴 <span class="data-count">(最新10件)</span></h3>
-              <button class="expand-btn" onclick="toggleTableExpand('alerts-<%= sensor.sensorId %>-wrapper')">
-                <span class="toggle-icon">⌄</span><span class="toggle-text">展開</span>
-              </button>
-            </div>
-            <div class="table-wrapper alert-table" id="alerts-<%= sensor.sensorId %>-wrapper">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th width="25%">取得日</th>
-                    <th width="25%">取得時刻</th>
-                    <th width="50%">アラート発生理由</th>
-                  </tr>
-                </thead>
-                <tbody id="alerts-<%= sensor.sensorId %>">
-                  <% (sensor.alerts || []).slice(0, 10).forEach(alert => { %>
-                  <tr class="<%= alert.eventType?.includes('RECOVERY') ? 'alert-recovery' : 'alert-row' %>">
-                    <td><%= alert.date || '-' %></td>
-                    <td><%= alert.time || '-' %></td>
-                    <td><%= alert.event || '-' %></td>
+                    <td><%= data.averageTemperature?.toFixed(1) %> °C</td>
+                    <td><%= data.isAbnormal ? '異常' : '正常' %></td>
                   </tr>
                   <% }); %>
-                  <% if ((sensor.alerts || []).length === 0) { %>
-                    <tr class="empty-table-row">
-                      <td colspan="3">アラート履歴はありません</td>
-                    </tr>
-                  <% } %>
-                </tbody>
-              </table>
-            </div>
-            
-            <!-- Settings History -->
-            <div class="section-header history-section-header">
-              <h3>設定変更履歴 <span class="data-count">(最新10件)</span></h3>
-              <button class="expand-btn" onclick="toggleTableExpand('settings-<%= sensor.sensorId %>-wrapper')">
-                <span class="toggle-icon">⌄</span><span class="toggle-text">展開</span>
-              </button>
-            </div>
-            <div class="table-wrapper settings-table" id="settings-<%= sensor.sensorId %>-wrapper">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th width="25%">日付</th>
-                    <th width="25%">時刻</th>
-                    <th width="50%">設定内容</th>
-                  </tr>
-                </thead>
-                <tbody id="settings-<%= sensor.sensorId %>">
-                  <% (sensor.settings || []).forEach(setting => { %>
-                  <tr>
-                    <td><%= setting.date || '-' %></td>
-                    <td><%= setting.time || '-' %></td>
-                    <td><%= setting.content || '-' %></td>
-                  </tr>
-                  <% }); %>
-                  <% if ((sensor.settings || []).length === 0) { %>
-                    <tr class="empty-table-row">
-                      <td colspan="3">設定変更履歴はありません</td>
-                    </tr>
-                  <% } %>
-                </tbody>
-              </table>
-            </div>
-            
-            <!-- Personality History -->
-            <div class="section-header history-section-header">
-              <h3>個性（バイアス）履歴 <span class="data-count">(最新10件)</span></h3>
-              <button class="expand-btn" onclick="toggleTableExpand('personality-<%= sensor.sensorId %>-wrapper')">
-                <span class="toggle-icon">⌄</span><span class="toggle-text">展開</span>
-              </button>
-            </div>
-            <div class="table-wrapper personality-table" id="personality-<%= sensor.sensorId %>-wrapper">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th width="25%">日付</th>
-                    <th width="25%">時刻</th>
-                    <th width="50%">バイアス設定</th>
-                  </tr>
-                </thead>
-                <tbody id="personality-<%= sensor.sensorId %>">
-                  <% (sensor.personality || []).forEach(item => { %>
-                  <tr>
-                    <td><%= item.date || '-' %></td>
-                    <td><%= item.time || '-' %></td>
-                    <td><%= item.content || '-' %></td>
-                  </tr>
-                  <% }); %>
-                  <% if ((sensor.personality || []).length === 0) { %>
-                    <tr class="empty-table-row">
-                      <td colspan="3">バイアス設定履歴はありません</td>
-                    </tr>
-                  <% } %>
                 </tbody>
               </table>
             </div>
           </div>
+
+          <!-- Alert History -->
+          <div class="section-header history-section-header">
+            <h3>アラート履歴 <span class="data-count">(最新10件)</span></h3>
+            <button class="expand-btn" onclick="toggleTableExpand('alerts-wrapper')">
+              <span class="toggle-icon">⌄</span><span class="toggle-text">展開</span>
+            </button>
+          </div>
+          <div class="table-wrapper alert-table" id="alerts-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th width="25%">取得日</th>
+                  <th width="25%">取得時刻</th>
+                  <th width="50%">アラート発生理由</th>
+                </tr>
+              </thead>
+              <tbody id="alerts-table-body">
+                <% alerts.forEach(alert => { %>
+                <tr data-alert-id="<%= alert._id %>" class="<%= alert.status === 'recovered' ? 'alert-recovery' : 'alert-row' %>">
+                  <td><%= new Date(alert.date).toLocaleDateString('ja-JP') %></td>
+                  <td><%= new Date(alert.date).toLocaleTimeString('ja-JP') %></td>
+                  <td>
+                    <%= alert.alertReason %>
+                    (<%= alert.status === 'active' ? '発生中' : '復旧' %>)
+                  </td>
+                </tr>
+                <% }); %>
+                <% if (alerts.length === 0) { %>
+                <tr class="empty-table-row">
+                  <td colspan="3">アラート履歴はありません</td>
+                </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Settings History -->
+          <div class="section-header history-section-header">
+            <h3>設定変更履歴 <span class="data-count">(最新10件)</span></h3>
+            <button class="expand-btn" onclick="toggleTableExpand('settings-<%= sensor.sensorId %>-wrapper')">
+              <span class="toggle-icon">⌄</span><span class="toggle-text">展開</span>
+            </button>
+          </div>
+          <div class="table-wrapper settings-table" id="settings-<%= sensor.sensorId %>-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th width="25%">日付</th>
+                  <th width="25%">時刻</th>
+                  <th width="50%">設定内容</th>
+                </tr>
+              </thead>
+              <tbody id="settings-<%= sensor.sensorId %>">
+                <% (sensor.settings || []).forEach(setting => { %>
+                <tr>
+                  <td><%= setting.date || '-' %></td>
+                  <td><%= setting.time || '-' %></td>
+                  <td><%= setting.content || '-' %></td>
+                </tr>
+                <% }); %>
+                <% if ((sensor.settings || []).length === 0) { %>
+                <tr class="empty-table-row">
+                  <td colspan="3">設定変更履歴はありません</td>
+                </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Personality History -->
+          <div class="section-header history-section-header">
+            <h3>個性（バイアス）履歴 <span class="data-count">(最新10件)</span></h3>
+            <button class="expand-btn" onclick="toggleTableExpand('personality-<%= sensor.sensorId %>-wrapper')">
+              <span class="toggle-icon">⌄</span><span class="toggle-text">展開</span>
+            </button>
+          </div>
+          <div class="table-wrapper personality-table" id="personality-<%= sensor.sensorId %>-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th width="25%">日付</th>
+                  <th width="25%">時刻</th>
+                  <th width="50%">バイアス設定</th>
+                </tr>
+              </thead>
+              <tbody id="personality-<%= sensor.sensorId %>">
+                <% (sensor.personality || []).forEach(item => { %>
+                <tr>
+                  <td><%= item.date || '-' %></td>
+                  <td><%= item.time || '-' %></td>
+                  <td><%= item.content || '-' %></td>
+                </tr>
+                <% }); %>
+                <% if ((sensor.personality || []).length === 0) { %>
+                <tr class="empty-table-row">
+                  <td colspan="3">バイアス設定履歴はありません</td>
+                </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
         <% }); %>
       </div>
     </div>
@@ -175,7 +178,7 @@
     <!-- Server Tab Content -->
     <div id="serverTab" class="tab-content">
       <h2 class="server-title">サーバー情報</h2>
-      
+
       <div class="server-stats">
         <!-- System Status Card -->
         <div class="stat-card system-status">
@@ -216,7 +219,7 @@
             </table>
           </div>
         </div>
-        
+
         <!-- Other stat cards... -->
       </div>
     </div>
@@ -246,7 +249,8 @@
     text-align: center;
   }
 
-  h2, h3 {
+  h2,
+  h3 {
     margin: 0.5rem 0;
   }
 
@@ -339,27 +343,32 @@
   }
 
   /* Column widths */
-  .data-table th:nth-child(1), /* 年月日 */
+  .data-table th:nth-child(1),
+  /* 年月日 */
   .data-table td:nth-child(1) {
     width: 100px;
   }
 
-  .data-table th:nth-child(2), /* 時刻 */
+  .data-table th:nth-child(2),
+  /* 時刻 */
   .data-table td:nth-child(2) {
     width: 100px;
   }
 
-  .data-table th:nth-child(n+3):nth-child(-n+18), /* データ1-16 */
+  .data-table th:nth-child(n+3):nth-child(-n+18),
+  /* データ1-16 */
   .data-table td:nth-child(n+3):nth-child(-n+18) {
     width: 50px;
   }
 
-  .data-table th:nth-child(19), /* 平均温度 */
+  .data-table th:nth-child(19),
+  /* 平均温度 */
   .data-table td:nth-child(19) {
     width: 80px;
   }
 
-  .data-table th:nth-child(20), /* 状態 */
+  .data-table th:nth-child(20),
+  /* 状態 */
   .data-table td:nth-child(20) {
     width: 60px;
   }
@@ -401,7 +410,7 @@
     max-width: 300px;
     overflow: hidden;
   }
-  
+
   .temp-values {
     white-space: nowrap;
     overflow: hidden;
@@ -430,7 +439,8 @@
       max-height: 200px;
     }
 
-    .data-table th, .data-table td {
+    .data-table th,
+    .data-table td {
       padding: 8px 6px;
       font-size: 0.9rem;
     }
@@ -489,7 +499,7 @@
 
   .tab-button.active {
     background-color: #228be6;
-    color : white;
+    color: white;
     border: none;
     border-bottom: 2px solid #228be6;
     margin-bottom: -2px;
@@ -513,8 +523,15 @@
   }
 
   @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-5px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(-5px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   /* Responsive Adjustments */
@@ -613,8 +630,13 @@
 
   /* Animation for refresh button */
   @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    from {
+      transform: rotate(0deg);
+    }
+
+    to {
+      transform: rotate(360deg);
+    }
   }
 
   .refresh-btn.spinning .refresh-icon {
@@ -622,260 +644,227 @@
     animation: spin 1s linear infinite;
   }
 
+  .status-active {
+    color: white;
+    background-color: var(--warning);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.9em;
+  }
 
-  
+  .status-recovered {
+    color: white;
+    background-color: var(--success);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.9em;
+  }
+
+  tr.new-alert {
+    animation: highlightNew 2s ease-out;
+  }
+
+  @keyframes highlightNew {
+    0% {
+      background-color: var(--alert-light);
+    }
+
+    100% {
+      background-color: transparent;
+    }
+  }
+
+  .table-wrapper {
+    margin-top: 1rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--gray-200);
+  }
+
+  .data-table th {
+    background-color: var(--gray-100);
+    font-weight: 600;
+    color: var(--gray-700);
+  }
+
+  .data-table tr:hover {
+    background-color: var(--gray-50);
+  }
 </style>
 
+<script src="/socket.io/socket.io.js"></script>
 <script>
+  const socket = io();
+
+  socket.on('connect', () => {
+    console.log('Connected to server');
+  });
+
+  socket.on('disconnect', () => {
+    console.log('Disconnected from server');
+  });
+
+  // Handle sensor data updates
+  socket.on('sensorUpdate', (data) => {
+    if (!data || !data.sensorId) return;
+    const tbody = document.getElementById(`tbody-${data.sensorId}`);
+    if (!tbody) return;
+
+    const row = document.createElement('tr');
+    row.className = data.isAbnormal ? 'table-danger' : '';
+
+    let rowHTML = `
+      <td>${data.acquisitionDate}</td>
+      <td>${data.acquisitionTime}</td>
+    `;
+
+    // Add temperature readings
+    data.temperatures.forEach(temp => {
+      rowHTML += `<td>${temp}</td>`;
+    });
+
+    rowHTML += `
+      <td>${data.averageTemperature.toFixed(1)} °C</td>
+      <td>${data.isAbnormal ? '異常' : '正常'}</td>
+    `;
+
+    row.innerHTML = rowHTML;
+    tbody.insertBefore(row, tbody.firstChild);
+
+    // Keep only latest 100 rows
+    while (tbody.children.length > 100) {
+      tbody.removeChild(tbody.lastChild);
+    }
+  });
+
+  // Handle settings updates
+  socket.on('settingUpdate', (setting) => {
+    if (!setting || !setting.sensorId) return;
+    const tbody = document.getElementById(`settings-${setting.sensorId}`);
+    if (!tbody) return;
+
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${setting.date}</td>
+      <td>${setting.time}</td>
+      <td>${setting.content}</td>
+    `;
+
+    tbody.insertBefore(row, tbody.firstChild);
+
+    // Keep only latest 10 rows
+    while (tbody.children.length > 10) {
+      tbody.removeChild(tbody.lastChild);
+    }
+
+    // Remove empty state message if it exists
+    const emptyRow = tbody.querySelector('.empty-table-row');
+    if (emptyRow) {
+      emptyRow.remove();
+    }
+  });
+
+  // Handle personality/bias updates
+  socket.on('personalityUpdate', (personality) => {
+    if (!personality || !personality.sensorId) return;
+    const tbody = document.getElementById(`personality-${personality.sensorId}`);
+    if (!tbody) return;
+
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${personality.date}</td>
+      <td>${personality.time}</td>
+      <td>${personality.content}</td>
+    `;
+
+    tbody.insertBefore(row, tbody.firstChild);
+
+    // Keep only latest 10 rows
+    while (tbody.children.length > 10) {
+      tbody.removeChild(tbody.lastChild);
+    }
+
+    // Remove empty state message if it exists
+    const emptyRow = tbody.querySelector('.empty-table-row');
+    if (emptyRow) {
+      emptyRow.remove();
+    }
+  });
+
+  // Handle initial data
+  socket.on('initialData', (data) => {
+    if (data.sensorData) {
+      updateSensorData(data.sensorData);
+    }
+  });
+
   // Function to update sensor data display
   function updateSensorData(data) {
     if (!data || !data.sensorId) return;
-    
     const tbody = document.getElementById(`tbody-${data.sensorId}`);
     if (!tbody) return;
-    
-    // Create a new row for the data
+
     const row = document.createElement('tr');
     row.className = data.isAbnormal ? 'table-danger' : '';
-    
-    // Format date and time
-    const date = new Date(data.timestamp);
-    const formattedDate = date.toLocaleDateString('ja-JP', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit'
-    }).replace(/\//g, '-');
-    
-    const formattedTime = date.toLocaleTimeString('ja-JP', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false
-    });
-    
-    // Create row content
+
     let rowHTML = `
-      <td>${formattedDate}</td>
-      <td>${formattedTime}</td>
+      <td>${data.acquisitionDate}</td>
+      <td>${data.acquisitionTime}</td>
     `;
-    
-    // Add the 16 temperature readings
+
+    // Add temperature readings
     if (data.temperatures && Array.isArray(data.temperatures)) {
       data.temperatures.forEach(temp => {
-        rowHTML += `<td>${typeof temp === 'number' ? temp.toFixed(1) : '--'}</td>`;
+        rowHTML += `<td>${typeof temp === 'number' ? temp.toFixed(1) : temp}</td>`;
       });
-      // Fill remaining slots if less than 16 readings
-      for (let i = data.temperatures.length; i < 16; i++) {
-        rowHTML += '<td>--</td>';
-      }
-    } else {
-      // If no temperature data, fill all 16 slots with placeholder
-      for (let i = 0; i < 16; i++) {
-        rowHTML += '<td>--</td>';
-      }
     }
-    
-    // Add average temperature and status
-    const avgTemp = data.temperatures ? 
-      (data.temperatures.reduce((sum, temp) => sum + (typeof temp === 'number' ? temp : 0), 0) / data.temperatures.length).toFixed(1) :
-      '--';
-    
+
     rowHTML += `
-      <td>${avgTemp} °C</td>
+      <td>${data.averageTemperature.toFixed(1)} °C</td>
       <td>${data.isAbnormal ? '異常' : '正常'}</td>
     `;
-    
+
     row.innerHTML = rowHTML;
-    
-    // Add to the beginning of the table
     tbody.insertBefore(row, tbody.firstChild);
-    
-    // Keep only the latest 100 rows
+
+    // Keep only latest 100 rows
     while (tbody.children.length > 100) {
       tbody.removeChild(tbody.lastChild);
     }
   }
-  
+
   // Function to handle the refresh button click
   function refreshData(sensorId) {
-    // Get the refresh button and add the spinning class
     const refreshBtn = event.currentTarget;
     refreshBtn.classList.add('spinning');
-    
-    // Fetch the latest data for the specific sensor
+
     fetch(`/api/sensor-data/${sensorId}/latest`)
       .then(response => response.json())
       .then(data => {
         if (data) {
-          // Clear existing table data
-          const tbody = document.getElementById(`tbody-${sensorId}`);
-          if (tbody) {
-            tbody.innerHTML = '';
-          }
-          // Update with new data
-          if (Array.isArray(data)) {
-            data.forEach(item => {
-              if (item) updateSensorData(item);
-            });
-          } else {
-            updateSensorData(data);
-          }
-          console.log(`Data refreshed for sensor ${sensorId}`);
+          updateSensorData(data);
         }
       })
-      .catch(error => console.error(`Error refreshing sensor data (${sensorId}):`, error))
+      .catch(error => console.error(`Error refreshing sensor data:`, error))
       .finally(() => {
-        // Remove the spinning class after a short delay for visual feedback
         setTimeout(() => {
           refreshBtn.classList.remove('spinning');
         }, 500);
       });
   }
-  
-  // Function to handle alert updates
-  function handleAlert(data) {
-    if (!data || !data.sensorId) return;
-    
-    const alertsTable = document.getElementById(`alerts-${data.sensorId}`);
-    if (!alertsTable) return;
-    
-    // Create a new row for the alert
-    const row = document.createElement('tr');
-    row.className = data.eventType && data.eventType.includes('RECOVERY') ? 'alert-recovery' : 'alert-row';
-    
-    // Create row content
-    row.innerHTML = `
-      <td>${data.date || '-'}</td>
-      <td>${data.time || '-'}</td>
-      <td>${data.event || '-'}</td>
-    `;
-    
-    // Add to the beginning of the table
-    alertsTable.insertBefore(row, alertsTable.firstChild);
-    
-    // Keep only the latest 10 rows
-    while (alertsTable.children.length > 10) {
-      alertsTable.removeChild(alertsTable.lastChild);
-    }
-  }
-  
-  // Function to handle settings updates
-  function handleSettingChange(data) {
-    if (!data || !data.sensorId) return;
-    
-    const settingsTable = document.getElementById(`settings-${data.sensorId}`);
-    if (!settingsTable) return;
-    
-    // Format the content
-    let content = data.content;
-    if (!content && data.changeType) {
-      if (data.changeType === 'threshold' && data.value) {
-        const { high, low } = data.value;
-        content = `しきい値（高: ${high}°C / 低: ${low}°C）`;
-      } else if (data.changeType === 'interval' && data.value) {
-        content = `読取間隔変更: ${data.value}ms`;
-      } else {
-        content = `${data.changeType}の設定変更`;
-      }
-    }
-    
-    // Create a new row
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td>${data.date || '-'}</td>
-      <td>${data.time || '-'}</td>
-      <td>${content || '-'}</td>
-    `;
-    
-    // Add to the beginning of the table
-    settingsTable.insertBefore(row, settingsTable.firstChild);
-  }
-  
-  // Function to handle personality updates
-  function handlePersonalityUpdate(data) {
-    if (!data || !data.sensorId) return;
-    
-    const personalityTable = document.getElementById(`personality-${data.sensorId}`);
-    if (!personalityTable) return;
-    
-    // Format the content
-    let content = data.content;
-    if (!content && data.biasType) {
-      if (data.biasType === 'temperature_offset' && data.biasValue) {
-        const offset = data.biasValue.offset;
-        const sign = offset > 0 ? '+' : '';
-        content = `温度補正バイアス: ${sign}${offset}°C`;
-      } else if (data.biasType === 'sensitivity' && data.biasValue) {
-        content = `感度設定: ${data.biasValue.level}`;
-      } else {
-        content = `${data.biasType}の設定`;
-      }
-    }
-    
-    // Create a new row
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td>${data.date || '-'}</td>
-      <td>${data.time || '-'}</td>
-      <td>${content || '-'}</td>
-    `;
-    
-    // Add to the beginning of the table
-    personalityTable.insertBefore(row, personalityTable.firstChild);
-  }
-  
-  // Function to fetch latest data every second
-  setInterval(() => {
-    fetch('/api/sensor-data/latest')
-      .then(response => response.json())
-      .then(data => {
-        if (Array.isArray(data)) {
-          data.forEach(sensorData => {
-            if (sensorData) updateSensorData(sensorData);
-          });
-        }
-      })
-      .catch(error => console.error('Error fetching sensor data:', error));
-  }, 1000);
-  
-  // Fetch alerts, settings, etc. less frequently (every 5 seconds)
-  setInterval(() => {
-    // Fetch latest alerts
-    fetch('/api/alerts')
-      .then(response => response.json())
-      .then(data => {
-        if (Array.isArray(data)) {
-          data.forEach(alert => {
-            if (alert) handleAlert(alert);
-          });
-        }
-      })
-      .catch(error => console.error('Error fetching alerts:', error));
-      
-    // Fetch latest settings
-    fetch('/api/settings')
-      .then(response => response.json())
-      .then(data => {
-        if (Array.isArray(data)) {
-          data.forEach(setting => {
-            if (setting) handleSettingChange(setting);
-          });
-        }
-      })
-      .catch(error => console.error('Error fetching settings:', error));
-      
-    // Fetch latest personality data
-    fetch('/api/personality')
-      .then(response => response.json())
-      .then(data => {
-        if (Array.isArray(data)) {
-          data.forEach(item => {
-            if (item) handlePersonalityUpdate(item);
-          });
-        }
-      })
-      .catch(error => console.error('Error fetching personality data:', error));
-  }, 5000);
 
   // Tab switching logic
   document.addEventListener('DOMContentLoaded', () => {
@@ -899,19 +888,19 @@
   function switchTab(tabId, buttonElement) {
     // Remove active class from all tabs and buttons
     document.querySelectorAll('.tab-content').forEach(tab => {
-        tab.style.display = 'none';
-        tab.classList.remove('active');
+      tab.style.display = 'none';
+      tab.classList.remove('active');
     });
     document.querySelectorAll('.tab-button').forEach(btn => {
-        btn.classList.remove('active');
+      btn.classList.remove('active');
     });
-    
+
     // Show selected tab and activate button
     const selectedTab = document.getElementById(tabId);
     selectedTab.style.display = 'block';
     selectedTab.classList.add('active');
     buttonElement.classList.add('active');
-    
+
     // Store the active tab in localStorage
     localStorage.setItem('activeTab', tabId);
     localStorage.setItem('activeTabBtn', buttonElement.id);
@@ -931,21 +920,21 @@
   function toggleTableExpand(wrapperId) {
     const wrapper = document.getElementById(wrapperId);
     if (!wrapper) return;
-    
+
     // Toggle expanded class
     wrapper.classList.toggle('expanded');
-    
+
     // Update button text
     const isExpanded = wrapper.classList.contains('expanded');
     const btn = event.currentTarget;
     const toggleIcon = btn.querySelector('.toggle-icon');
     const toggleText = btn.querySelector('.toggle-text');
-    
+
     if (toggleIcon) toggleIcon.textContent = isExpanded ? '⌃' : '⌄';
     if (toggleText) toggleText.textContent = isExpanded ? '折りたたむ' : '展開';
-    
+
     btn.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
-    
+
     // Check for scroll content after expansion
     setTimeout(() => {
       const hasMoreContent = wrapper.scrollHeight > wrapper.clientHeight + 10;
@@ -959,18 +948,18 @@
       // Check if the table has content
       const tableBody = wrapper.querySelector('tbody');
       const hasRows = tableBody && tableBody.children.length > 0;
-      
+
       // Add appropriate classes based on content
       if (hasRows) {
         wrapper.classList.add('has-content');
-        
+
         // Check if scrolling is needed
         const hasMoreContent = wrapper.scrollHeight > wrapper.clientHeight + 10;
         wrapper.classList.toggle('has-more-content', hasMoreContent);
       } else {
         wrapper.classList.add('empty');
       }
-      
+
       // Set up expand button state
       const wrapperId = wrapper.id;
       if (wrapperId) {
@@ -979,10 +968,10 @@
           const isExpanded = wrapper.classList.contains('expanded');
           const toggleIcon = btn.querySelector('.toggle-icon');
           const toggleText = btn.querySelector('.toggle-text');
-          
+
           if (toggleIcon) toggleIcon.textContent = isExpanded ? '⌃' : '⌄';
           if (toggleText) toggleText.textContent = isExpanded ? '折りたたむ' : '展開';
-          
+
           btn.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
         }
       }
@@ -992,7 +981,7 @@
   // Call initialization on page load
   document.addEventListener('DOMContentLoaded', () => {
     initializeHistoryTables();
-    
+
     // Add scroll detection for table wrappers
     document.querySelectorAll('.table-wrapper').forEach(wrapper => {
       wrapper.addEventListener('scroll', () => {
