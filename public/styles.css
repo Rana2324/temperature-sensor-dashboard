@@ -22,6 +22,15 @@
     --transition: all 0.3s ease;
     --tab-shadow: 0 4px 6px rgba(67, 97, 238, 0.15);
     --tab-active-shadow: 0 8px 16px rgba(67, 97, 238, 0.2);
+    
+    /* History table theme colors */
+    --alert-color: #ff9800;
+    --alert-light: rgba(255, 152, 0, 0.08);
+    --settings-color: #03a9f4;
+    --settings-light: rgba(3, 169, 244, 0.08);
+    --personality-color: #9c27b0;
+    --personality-light: rgba(156, 39, 176, 0.08);
+    --recovery-color: rgba(76, 175, 80, 0.08);
 }
 
 /* Base Styles */
@@ -141,29 +150,16 @@ body {
     background: rgba(255, 255, 255, 0.5);
 }
 
-@media (max-width: 768px) {
-    .tab-nav {
-        padding: 8px;
-        gap: 6px;
-    }
-    
-    .tab-button {
-        padding: 12px 20px;
-        font-size: 14px;
-        min-width: 120px;
-    }
-    
-    .tab-icon {
-        font-size: 1.1em;
-    }
-}
-
 /* Enhanced Content Cards */
 .tab-content {
     display: none;
     padding: 24px;
     background: white;
     animation: fadeIn 0.3s ease;
+}
+
+.tab-content.active {
+    display: block;
 }
 
 .sensor-data-section {
@@ -188,7 +184,69 @@ body {
     border-bottom: 2px solid var(--primary);
 }
 
-/* Enhanced Tables */
+/* === HISTORY TABLE STYLES === */
+/* Section Headers for History Tables */
+.history-section-header {
+    background-color: #fafafa;
+    border-radius: 8px 8px 0 0;
+    padding: 10px 15px;
+    margin: 20px 0 0 0;
+    border: 1px solid #e0e0e0;
+    border-bottom: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.history-section-header h3 {
+    font-size: 16px;
+    color: #333;
+    display: flex;
+    align-items: center;
+    margin: 0;
+}
+
+.data-count {
+    font-size: 12px;
+    color: #6c757d;
+    font-weight: normal;
+    margin-left: 8px;
+}
+
+/* Expand/collapse button styling */
+.expand-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background-color: transparent;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.expand-btn:hover {
+    background-color: #f5f5f5;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.expand-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
+}
+
+.expand-btn .toggle-icon {
+    font-size: 18px;
+    transition: transform 0.3s ease;
+}
+
+.expand-btn[aria-expanded="true"] .toggle-icon {
+    transform: rotate(180deg);
+}
+
+/* Table Wrappers for History Tables */
 .table-wrapper {
     max-height: 400px;
     overflow-y: auto;
@@ -198,54 +256,158 @@ body {
     background: white;
     box-shadow: var(--shadow-sm);
     position: relative;
-    scroll-behavior: smooth; /* Add smooth scrolling */
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: var(--gray-400) var(--gray-100);
 }
 
+/* Special styles for history tables */
+.table-wrapper.alert-table,
+.table-wrapper.settings-table,
+.table-wrapper.personality-table {
+    max-height: 150px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    transition: max-height 0.3s ease, box-shadow 0.3s ease;
+    margin-bottom: 20px;
+    overflow-x: auto;
+}
+
+/* Table-specific color coding */
+.table-wrapper.alert-table {
+    border-left: 3px solid var(--alert-color);
+}
+
+.table-wrapper.settings-table {
+    border-left: 3px solid var(--settings-color);
+}
+
+.table-wrapper.personality-table {
+    border-left: 3px solid var(--personality-color);
+}
+
+/* Expanded state for history tables */
+.table-wrapper.alert-table.expanded,
+.table-wrapper.settings-table.expanded,
+.table-wrapper.personality-table.expanded {
+    max-height: 400px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Data Tables Styles */
 .data-table {
     width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
+    border-collapse: collapse;
+    margin: 0;
+    padding: 0;
 }
 
-.data-table th {
-    background-color: var(--primary);
-    color: white;
-    padding: 12px 16px;
-    font-weight: 600;
+.data-table th,
+.data-table td {
+    padding: 10px 12px;
+    text-align: center;
+    vertical-align: middle;
+    border: 1px solid #ddd;
+}
+
+/* Column sizing for history tables */
+.alert-table .data-table th,
+.settings-table .data-table th,
+.personality-table .data-table th,
+.alert-table .data-table td,
+.settings-table .data-table td,
+.personality-table .data-table td {
+    width: auto;
+}
+
+/* Ensure first and second columns are fixed width */
+.alert-table .data-table th:nth-child(1),
+.settings-table .data-table th:nth-child(1),
+.personality-table .data-table th:nth-child(1),
+.alert-table .data-table td:nth-child(1),
+.settings-table .data-table td:nth-child(1),
+.personality-table .data-table td:nth-child(1),
+.alert-table .data-table th:nth-child(2),
+.settings-table .data-table th:nth-child(2),
+.personality-table .data-table th:nth-child(2),
+.alert-table .data-table td:nth-child(2),
+.settings-table .data-table td:nth-child(2),
+.personality-table .data-table td:nth-child(2) {
+    width: 25%;
+}
+
+/* Last column (content) gets more space */
+.alert-table .data-table th:nth-child(3),
+.settings-table .data-table th:nth-child(3),
+.personality-table .data-table th:nth-child(3),
+.alert-table .data-table td:nth-child(3),
+.settings-table .data-table td:nth-child(3),
+.personality-table .data-table td:nth-child(3) {
+    width: 50%;
     text-align: left;
+}
+
+/* Header styles for history tables */
+.alert-table th {
+    background-color: var(--alert-color);
     position: sticky;
     top: 0;
     z-index: 10;
+    color: white;
 }
 
-.data-table td {
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--gray-200);
-    color: var(--gray-700);
+.settings-table th {
+    background-color: var(--settings-color);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    color: white;
 }
 
-.data-table tr:hover {
-    background-color: var(--gray-100);
+.personality-table th {
+    background-color: var(--personality-color);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    color: white;
 }
 
-/* Special styles for alert, settings and personality tables to make scrollbars more prominent when data increases */
-.table-wrapper.alert-table, 
-.table-wrapper.settings-table, 
-.table-wrapper.personality-table {
-    max-height: 150px; /* Smaller default height */
-    transition: max-height 0.5s ease; /* Smooth height transition */
-    border: 1px solid var(--gray-200);
-    border-radius: 8px;
-    margin-bottom: 20px;
-    background-color: white;
-    overflow-y: auto;
+/* Row styles for alert table */
+.alert-table .alert-row {
+    background-color: var(--alert-light);
 }
 
-/* When tables have more data, increase the height */
-.table-wrapper.alert-table.expanded, 
-.table-wrapper.settings-table.expanded, 
-.table-wrapper.personality-table.expanded {
-    max-height: 400px; /* More space for expanded content */
+.alert-table .alert-recovery {
+    background-color: var(--recovery-color);
+}
+
+/* Empty state styling */
+.empty-table-row td {
+    text-align: center;
+    color: #9e9e9e;
+    font-style: italic;
+    padding: 20px;
+    background-color: #f9f9f9;
+}
+
+/* Scrollbar styling */
+.table-wrapper::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.table-wrapper::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+    background: #bdbdbd;
+    border-radius: 4px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb:hover {
+    background: #9e9e9e;
 }
 
 /* Scrollbar indicator for tables with more content */
@@ -263,128 +425,7 @@ body {
 }
 
 .table-wrapper.has-more-content::after {
-    opacity: 1; /* Show gradient when there's more content */
-}
-
-/* Ensure scrollbars are always visible on supported browsers */
-.table-wrapper {
-    scrollbar-width: thin; /* Firefox */
-    scrollbar-color: var(--gray-400) var(--gray-100); /* Firefox */
-}
-
-/* Scrollbar Styling */
-.table-wrapper::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-}
-
-.table-wrapper::-webkit-scrollbar-track {
-    background: var(--gray-100);
-    border-radius: 4px;
-}
-
-.table-wrapper::-webkit-scrollbar-thumb {
-    background-color: var(--gray-400);
-    border-radius: 4px;
-    transition: var(--transition);
-}
-
-.table-wrapper::-webkit-scrollbar-thumb:hover {
-    background-color: var(--gray-500);
-}
-
-/* Expand button for tables */
-.expand-table-btn {
-    display: inline-block;
-    margin-left: 10px;
-    font-size: 12px;
-    color: var(--primary);
-    cursor: pointer;
-    user-select: none;
-}
-
-.expand-table-btn:hover {
-    text-decoration: underline;
-}
-
-/* Section headers with expand toggle */
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 15px 0 10px 0;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--gray-200);
-}
-
-.section-header h3 {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--gray-700);
-    margin: 0;
-    display: flex;
-    align-items: center;
-}
-
-.data-count {
-    font-size: 14px;
-    color: var(--gray-600);
-    font-weight: normal;
-    margin-left: 8px;
-}
-
-/* Expand/collapse button styles */
-.expand-btn {
-    background: none;
-    border: 1px solid var(--primary-light);
-    padding: 4px 10px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 13px;
-    color: var(--primary);
-    transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.expand-btn:hover {
-    background-color: rgba(67, 97, 238, 0.1);
-}
-
-.expand-btn:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
-}
-
-/* Custom styles for alert table rows */
-.alert-table .alert-row {
-    background-color: rgba(247, 37, 133, 0.05);
-}
-
-.alert-table .alert-recovery {
-    background-color: rgba(76, 201, 240, 0.1);
-}
-
-/* Make header sticky in all special tables */
-.alert-table th,
-.settings-table th,
-.personality-table th {
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    background-color: var(--primary);
-    color: white;
-    padding: 10px 15px;
-    text-align: left;
-}
-
-/* Ensure tables fill the wrapper width */
-.alert-table table,
-.settings-table table,
-.personality-table table {
-    width: 100%;
-    border-collapse: collapse;
+    opacity: 1;
 }
 
 /* Status Indicators */
@@ -393,13 +434,12 @@ body {
     color: var(--warning) !important;
 }
 
-.alert-row {
-    background-color: rgba(247, 37, 133, 0.05) !important;
+.table-danger {
+    background-color: #ffebee !important;
 }
 
-.alert-recovery {
-    background-color: rgba(76, 201, 240, 0.1) !important;
-    color: var(--success) !important;
+.table-danger:hover {
+    background-color: #ffe5e8 !important;
 }
 
 /* Connection Status */
@@ -456,6 +496,33 @@ body {
     border-bottom: 2px solid var(--primary-light);
 }
 
+/* Section controls with refresh button */
+.section-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.refresh-btn {
+    background: none;
+    border: none;
+    color: #4a90e2;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 4px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.refresh-btn:hover {
+    background-color: #e3f2fd;
+}
+
+.refresh-btn.spinning .refresh-icon {
+    animation: spin 1s infinite linear;
+}
+
 /* Animations */
 @keyframes fadeIn {
     from { 
@@ -468,7 +535,6 @@ body {
     }
 }
 
-/* Animation for expand/collapse */
 @keyframes expandTable {
     from { max-height: 150px; }
     to { max-height: 400px; }
@@ -479,32 +545,30 @@ body {
     to { max-height: 150px; }
 }
 
-.table-wrapper.expanded {
-    animation: expandTable 0.5s forwards;
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
-.table-wrapper.collapsed {
-    animation: collapseTable 0.5s forwards;
-}
-
-/* Empty state styling for history tables */
-.table-wrapper:empty::before {
-    content: "データがありません";
-    display: block;
-    padding: 20px;
-    text-align: center;
-    color: var(--gray-500);
-}
-
-/* Responsive Design */
+/* Responsive Styles */
 @media (max-width: 768px) {
     .container {
         padding: 12px;
     }
     
+    .tab-nav {
+        padding: 8px;
+        gap: 6px;
+    }
+    
     .tab-button {
-        padding: 10px 16px;
+        padding: 12px 20px;
         font-size: 14px;
+        min-width: 120px;
+    }
+    
+    .tab-icon {
+        font-size: 1.1em;
     }
     
     .sensor-data-section {
@@ -517,7 +581,7 @@ body {
     
     .data-table th,
     .data-table td {
-        padding: 10px 12px;
+        padding: 8px 10px;
         font-size: 14px;
     }
     
@@ -525,188 +589,29 @@ body {
         grid-template-columns: 1fr;
         gap: 16px;
     }
-}
-
-/* Sensor Data Table */
-.table-wrapper {
-    overflow-x: auto;
-    margin: 20px 0;
-}
-
-.data-table {
-    width: 100%;
-    border-collapse: collapse;
-    min-width: 1000px;
-}
-
-.data-table th,
-.data-table td {
-    padding: 8px;
-    text-align: center;
-    border: 1px solid #ddd;
-}
-
-.data-table th {
-    background-color: #f5f5f5;
-    font-weight: bold;
-}
-
-.data-table tbody tr:nth-child(even) {
-    background-color: #f9f9f9;
-}
-
-.data-table tbody tr:hover {
-    background-color: #f0f0f0;
-}
-
-.table-danger {
-    background-color: #ffebee !important;
-}
-
-.table-danger:hover {
-    background-color: #ffe5e8 !important;
-}
-
-/* Responsive design for smaller screens */
-@media screen and (max-width: 1024px) {
-    .table-wrapper {
-        margin: 10px 0;
-        padding: 0 10px;
+    
+    .alert-table, 
+    .settings-table, 
+    .personality-table {
+        max-height: 120px;
     }
-}
-
-/* History Table Styles for Alert, Settings, and Personality sections */
-
-/* Section header styling */
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: 15px 0 8px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.section-header h3 {
-  font-size: 16px;
-  color: #2c3e50;
-  display: flex;
-  align-items: center;
-  margin: 0;
-}
-
-.data-count {
-  font-size: 12px;
-  color: #6c757d;
-  font-weight: normal;
-  margin-left: 8px;
-}
-
-/* Expand/collapse button styling */
-.expand-btn {
-  background: none;
-  border: none;
-  color: #4a90e2;
-  cursor: pointer;
-  font-size: 14px;
-  padding: 4px 8px;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-}
-
-.expand-btn:hover {
-  background-color: #e3f2fd;
-}
-
-/* Table wrapper styles for collapsed and expanded states */
-.alert-table,
-.settings-table,
-.personality-table {
-  max-height: 150px;
-  transition: max-height 0.3s ease-in-out;
-  overflow: hidden;
-}
-
-.alert-table.expanded,
-.settings-table.expanded,
-.personality-table.expanded {
-  max-height: 500px;
-}
-
-/* Custom styles for each history table type */
-.alert-table {
-  border-left: 3px solid #ffcc80;
-}
-
-.settings-table {
-  border-left: 3px solid #80deea;
-}
-
-.personality-table {
-  border-left: 3px solid #b39ddb;
-}
-
-/* Alert row styling */
-.alert-row {
-  background-color: #fff8e1 !important;
-}
-
-.alert-recovery {
-  background-color: #e3f2fd !important;
-}
-
-/* Improved scrollbar styling for history tables */
-.table-wrapper::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-.table-wrapper::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
-}
-
-.table-wrapper::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 4px;
-}
-
-.table-wrapper::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
-}
-
-/* Section controls with refresh button */
-.section-controls {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.refresh-btn {
-  background: none;
-  border: none;
-  color: #4a90e2;
-  cursor: pointer;
-  font-size: 18px;
-  padding: 4px;
-  border-radius: 50%;
-  transition: all 0.2s ease;
-}
-
-.refresh-btn:hover {
-  background-color: #e3f2fd;
-}
-
-.refresh-btn.spinning .refresh-icon {
-  animation: spin 1s infinite linear;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+    
+    .alert-table.expanded, 
+    .settings-table.expanded, 
+    .personality-table.expanded {
+        max-height: 300px;
+    }
+    
+    .history-section-header {
+        padding: 8px 12px;
+    }
+    
+    .history-section-header h3 {
+        font-size: 14px;
+    }
+    
+    .expand-btn {
+        padding: 4px 8px;
+        font-size: 12px;
+    }
 }

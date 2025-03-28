@@ -507,3 +507,37 @@ export const createCustomAlert = async (req, res) => {
         res.status(500).json({ error: 'Failed to create custom alert' });
     }
 };
+
+// New function to get data for a specific sensor by ID
+export const getSensorDataById = async (req, res) => {
+    try {
+        const { sensorId } = req.params;
+        
+        if (!sensorId) {
+            return res.status(400).json({ error: 'Sensor ID is required' });
+        }
+        
+        const readings = await timeoutPromise(
+            SensorData.find({ sensorId })
+                .sort({ timestamp: -1 })
+                .limit(50)
+                .lean(),
+            5000
+        );
+        
+        // Format the readings for the frontend
+        const formattedReadings = readings.map(reading => ({
+            ...reading,
+            acquisitionDate: moment(reading.timestamp).format('YYYY/MM/DD'),
+            acquisitionTime: moment(reading.timestamp).format('HH:mm:ss.SSS')
+        }));
+        
+        res.json(formattedReadings);
+    } catch (error) {
+        console.error(`Error fetching data for sensor ${req.params.sensorId}:`, error);
+        if (error.message === 'Request timeout') {
+            return res.status(504).json({ error: 'Request timeout' });
+        }
+        res.status(500).json({ error: 'Failed to fetch sensor data' });
+    }
+};

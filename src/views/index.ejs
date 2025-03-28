@@ -70,19 +70,19 @@
             </div>
             
             <!-- Alert History -->
-            <div class="section-header">
+            <div class="section-header history-section-header">
               <h3>アラート履歴 <span class="data-count">(最新10件)</span></h3>
               <button class="expand-btn" onclick="toggleTableExpand('alerts-<%= sensor.sensorId %>-wrapper')">
-                展開 ⌄
+                <span class="toggle-icon">⌄</span><span class="toggle-text">展開</span>
               </button>
             </div>
             <div class="table-wrapper alert-table" id="alerts-<%= sensor.sensorId %>-wrapper">
               <table class="data-table">
                 <thead>
                   <tr>
-                    <th>取得日</th>
-                    <th>取得時刻</th>
-                    <th>アラート発生理由</th>
+                    <th width="25%">取得日</th>
+                    <th width="25%">取得時刻</th>
+                    <th width="50%">アラート発生理由</th>
                   </tr>
                 </thead>
                 <tbody id="alerts-<%= sensor.sensorId %>">
@@ -93,24 +93,29 @@
                     <td><%= alert.event || '-' %></td>
                   </tr>
                   <% }); %>
+                  <% if ((sensor.alerts || []).length === 0) { %>
+                    <tr class="empty-table-row">
+                      <td colspan="3">アラート履歴はありません</td>
+                    </tr>
+                  <% } %>
                 </tbody>
               </table>
             </div>
             
             <!-- Settings History -->
-            <div class="section-header">
-              <h3>設定変更履歴</h3>
+            <div class="section-header history-section-header">
+              <h3>設定変更履歴 <span class="data-count">(最新10件)</span></h3>
               <button class="expand-btn" onclick="toggleTableExpand('settings-<%= sensor.sensorId %>-wrapper')">
-                展開 ⌄
+                <span class="toggle-icon">⌄</span><span class="toggle-text">展開</span>
               </button>
             </div>
             <div class="table-wrapper settings-table" id="settings-<%= sensor.sensorId %>-wrapper">
               <table class="data-table">
                 <thead>
                   <tr>
-                    <th>日付</th>
-                    <th>時刻</th>
-                    <th>設定内容</th>
+                    <th width="25%">日付</th>
+                    <th width="25%">時刻</th>
+                    <th width="50%">設定内容</th>
                   </tr>
                 </thead>
                 <tbody id="settings-<%= sensor.sensorId %>">
@@ -121,24 +126,29 @@
                     <td><%= setting.content || '-' %></td>
                   </tr>
                   <% }); %>
+                  <% if ((sensor.settings || []).length === 0) { %>
+                    <tr class="empty-table-row">
+                      <td colspan="3">設定変更履歴はありません</td>
+                    </tr>
+                  <% } %>
                 </tbody>
               </table>
             </div>
             
             <!-- Personality History -->
-            <div class="section-header">
-              <h3>個性（バイアス）履歴</h3>
+            <div class="section-header history-section-header">
+              <h3>個性（バイアス）履歴 <span class="data-count">(最新10件)</span></h3>
               <button class="expand-btn" onclick="toggleTableExpand('personality-<%= sensor.sensorId %>-wrapper')">
-                展開 ⌄
+                <span class="toggle-icon">⌄</span><span class="toggle-text">展開</span>
               </button>
             </div>
             <div class="table-wrapper personality-table" id="personality-<%= sensor.sensorId %>-wrapper">
               <table class="data-table">
                 <thead>
                   <tr>
-                    <th>日付</th>
-                    <th>時刻</th>
-                    <th>バイアス設定</th>
+                    <th width="25%">日付</th>
+                    <th width="25%">時刻</th>
+                    <th width="50%">バイアス設定</th>
                   </tr>
                 </thead>
                 <tbody id="personality-<%= sensor.sensorId %>">
@@ -149,6 +159,11 @@
                     <td><%= item.content || '-' %></td>
                   </tr>
                   <% }); %>
+                  <% if ((sensor.personality || []).length === 0) { %>
+                    <tr class="empty-table-row">
+                      <td colspan="3">バイアス設定履歴はありません</td>
+                    </tr>
+                  <% } %>
                 </tbody>
               </table>
             </div>
@@ -681,6 +696,42 @@
     }
   }
   
+  // Function to handle the refresh button click
+  function refreshData(sensorId) {
+    // Get the refresh button and add the spinning class
+    const refreshBtn = event.currentTarget;
+    refreshBtn.classList.add('spinning');
+    
+    // Fetch the latest data for the specific sensor
+    fetch(`/api/sensor-data/${sensorId}/latest`)
+      .then(response => response.json())
+      .then(data => {
+        if (data) {
+          // Clear existing table data
+          const tbody = document.getElementById(`tbody-${sensorId}`);
+          if (tbody) {
+            tbody.innerHTML = '';
+          }
+          // Update with new data
+          if (Array.isArray(data)) {
+            data.forEach(item => {
+              if (item) updateSensorData(item);
+            });
+          } else {
+            updateSensorData(data);
+          }
+          console.log(`Data refreshed for sensor ${sensorId}`);
+        }
+      })
+      .catch(error => console.error(`Error refreshing sensor data (${sensorId}):`, error))
+      .finally(() => {
+        // Remove the spinning class after a short delay for visual feedback
+        setTimeout(() => {
+          refreshBtn.classList.remove('spinning');
+        }, 500);
+      });
+  }
+  
   // Function to handle alert updates
   function handleAlert(data) {
     if (!data || !data.sensorId) return;
@@ -887,36 +938,67 @@
     // Update button text
     const isExpanded = wrapper.classList.contains('expanded');
     const btn = event.currentTarget;
-    updateExpandButtonText(btn, isExpanded);
+    const toggleIcon = btn.querySelector('.toggle-icon');
+    const toggleText = btn.querySelector('.toggle-text');
+    
+    if (toggleIcon) toggleIcon.textContent = isExpanded ? '⌃' : '⌄';
+    if (toggleText) toggleText.textContent = isExpanded ? '折りたたむ' : '展開';
+    
+    btn.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
     
     // Check for scroll content after expansion
     setTimeout(() => {
-      const hasMoreContent = wrapper.scrollHeight > wrapper.clientHeight;
+      const hasMoreContent = wrapper.scrollHeight > wrapper.clientHeight + 10;
       wrapper.classList.toggle('has-more-content', hasMoreContent);
     }, 300); // Wait for animation to complete
   }
 
-  // Helper function to update button text
-  function updateExpandButtonText(btn, isExpanded) {
-    btn.textContent = isExpanded ? '折りたたむ ⌃' : '展開 ⌄';
-    btn.setAttribute('aria-expanded', isExpanded);
+  // Function to initialize all history tables
+  function initializeHistoryTables() {
+    document.querySelectorAll('.alert-table, .settings-table, .personality-table').forEach(wrapper => {
+      // Check if the table has content
+      const tableBody = wrapper.querySelector('tbody');
+      const hasRows = tableBody && tableBody.children.length > 0;
+      
+      // Add appropriate classes based on content
+      if (hasRows) {
+        wrapper.classList.add('has-content');
+        
+        // Check if scrolling is needed
+        const hasMoreContent = wrapper.scrollHeight > wrapper.clientHeight + 10;
+        wrapper.classList.toggle('has-more-content', hasMoreContent);
+      } else {
+        wrapper.classList.add('empty');
+      }
+      
+      // Set up expand button state
+      const wrapperId = wrapper.id;
+      if (wrapperId) {
+        const btn = document.querySelector(`.expand-btn[onclick*="${wrapperId}"]`);
+        if (btn) {
+          const isExpanded = wrapper.classList.contains('expanded');
+          const toggleIcon = btn.querySelector('.toggle-icon');
+          const toggleText = btn.querySelector('.toggle-text');
+          
+          if (toggleIcon) toggleIcon.textContent = isExpanded ? '⌃' : '⌄';
+          if (toggleText) toggleText.textContent = isExpanded ? '折りたたむ' : '展開';
+          
+          btn.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+        }
+      }
+    });
   }
 
-  function refreshData(sensorId) {
-    const btn = event.currentTarget;
-    btn.classList.add('spinning');
+  // Call initialization on page load
+  document.addEventListener('DOMContentLoaded', () => {
+    initializeHistoryTables();
     
-    // Simulate refresh - replace with actual data fetch
-    setTimeout(() => {
-        btn.classList.remove('spinning');
-    }, 1000);
-  }
-
-  // Add scroll detection for table wrappers
-  document.querySelectorAll('.table-wrapper').forEach(wrapper => {
-    wrapper.addEventListener('scroll', () => {
-        const hasMore = wrapper.scrollHeight > wrapper.clientHeight;
+    // Add scroll detection for table wrappers
+    document.querySelectorAll('.table-wrapper').forEach(wrapper => {
+      wrapper.addEventListener('scroll', () => {
+        const hasMore = wrapper.scrollHeight > wrapper.clientHeight + 10;
         wrapper.classList.toggle('has-more-content', hasMore);
+      });
     });
   });
 </script>

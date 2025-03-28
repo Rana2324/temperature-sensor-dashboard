@@ -14,6 +14,11 @@ router.get('/api/sensor-data', (req, res, next) => {
     sensorController.getLatestReadings(req, res, next);
 });
 
+router.get('/api/sensor-data/:sensorId/latest', (req, res, next) => {
+    // console.log(`GET /api/sensor-data/${req.params.sensorId}/latest called`);
+    sensorController.getSensorDataById(req, res, next);
+});
+
 router.post('/api/sensor-data', (req, res, next) => {
     // console.log('POST /api/sensor-data called with body:', req.body);
     sensorController.storeSensorData(req, res, next);
