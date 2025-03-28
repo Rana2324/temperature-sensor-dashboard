@@ -1,138 +1,213 @@
 <div class="container">
-  <h1>自立分散AIブロックチェーンセル　デモ画面イメージ</h1>
+  <h1>温度センサー監視システム</h1>
+  
 
-  <!-- Debugging Information -->
-  <script>
-    console.log('Latest Readings:', '<%= JSON.stringify(latestReadings) %>');
-  </script>
+  <!-- Tab Navigation -->
+  <div class="tab-container">
+    <div class="tab-nav">
+      <button class="tab-button" id="sensorTabBtn" onclick="switchTab('sensorTab', this)">
+        <span class="tab-icon">📊</span>
+        <span>センサー状態</span>
+      </button>
+      <button class="tab-button" id="serverTabBtn" onclick="switchTab('serverTab', this)">
+        <span class="tab-icon">🖥️</span>
+        <span>サーバー情報</span>
+      </button>
+    </div>
 
-  <!-- Sensors Overview Section -->
-  <div class="sensor-panels">
-    <% latestReadings.forEach((sensor, index) => { %>
-    <div class="card" data-sensor-id="<%= sensor.sensorId %>">
-      <div class="card-header">
-        <h2>温度センサー<%= sensor.sensorId %></h2>
-      </div>
-      <div class="card-body">
-        <!-- Latest Temperature Display -->
-        <div class="current-temp">
-          <h3>現在の温度</h3>
-          <div class="temperature-display" id="current-temp-<%= sensor.sensorId %>">
-            <%= sensor.data[0]?.averageTemperature?.toFixed(1) || '--' %> °C
+    <!-- Sensor Tab Content -->
+    <div id="sensorTab" class="tab-content">
+      <div class="sensor-panels">
+        <% latestReadings.forEach((sensor, index) => { %>
+          <div class="sensor-data-section" id="sensor-<%= sensor.sensorId %>">
+            <div class="sensor-header">
+              <h2 class="sensor-title">
+                <span class="sensor-icon">🌡️</span>
+                <%= sensor.sensorId %> センサー情報
+              </h2>
+              <div class="sensor-status <%= sensor.isActive ? 'active' : 'inactive' %>">
+                <%= sensor.isActive ? '稼働中' : '停止中' %>
+              </div>
+            </div>
+            
+            <!-- Raw Data History -->
+            <div class="sensor-data-section">
+             
+              <div class="section-controls">
+                <h3>取得データ履歴 <span class="data-count">(最新100件)</span></h3>
+                <button class="refresh-btn" onclick="refreshData('<%= sensor.sensorId %>')">
+                  <span class="refresh-icon">🔄</span>
+                </button>
+              </div>
+              <div class="table-wrapper">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>年月日</th>
+                      <th>時刻</th>
+                      <% for(let i = 1; i <= 16; i++) { %>
+                      <th><%= i %></th>
+                      <% } %>
+                      <th>平均温度</th>
+                      <th>状態</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tbody-<%= sensor.sensorId %>">
+                    <% sensor.data.forEach(data => { %>
+                    <tr class="<%= data.isAbnormal ? 'table-danger' : '' %>">
+                      <td><%= data.acquisitionDate %></td>
+                      <td><%= data.acquisitionTime %></td>
+                      <% data.temperatures.forEach(temp => { %>
+                      <td><%= temp %></td>
+                      <% }); %>
+                      <td><%= data.averageTemperature?.toFixed(1) %> °C</td>
+                      <td><%= data.isAbnormal ? '異常' : '正常' %></td>
+                    </tr>
+                    <% }); %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            
+            <!-- Alert History -->
+            <div class="section-header">
+              <h3>アラート履歴 <span class="data-count">(最新10件)</span></h3>
+              <button class="expand-btn" onclick="toggleTableExpand('alerts-<%= sensor.sensorId %>-wrapper')">
+                展開 ⌄
+              </button>
+            </div>
+            <div class="table-wrapper alert-table" id="alerts-<%= sensor.sensorId %>-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>取得日</th>
+                    <th>取得時刻</th>
+                    <th>アラート発生理由</th>
+                  </tr>
+                </thead>
+                <tbody id="alerts-<%= sensor.sensorId %>">
+                  <% (sensor.alerts || []).slice(0, 10).forEach(alert => { %>
+                  <tr class="<%= alert.eventType?.includes('RECOVERY') ? 'alert-recovery' : 'alert-row' %>">
+                    <td><%= alert.date || '-' %></td>
+                    <td><%= alert.time || '-' %></td>
+                    <td><%= alert.event || '-' %></td>
+                  </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+            
+            <!-- Settings History -->
+            <div class="section-header">
+              <h3>設定変更履歴</h3>
+              <button class="expand-btn" onclick="toggleTableExpand('settings-<%= sensor.sensorId %>-wrapper')">
+                展開 ⌄
+              </button>
+            </div>
+            <div class="table-wrapper settings-table" id="settings-<%= sensor.sensorId %>-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>日付</th>
+                    <th>時刻</th>
+                    <th>設定内容</th>
+                  </tr>
+                </thead>
+                <tbody id="settings-<%= sensor.sensorId %>">
+                  <% (sensor.settings || []).forEach(setting => { %>
+                  <tr>
+                    <td><%= setting.date || '-' %></td>
+                    <td><%= setting.time || '-' %></td>
+                    <td><%= setting.content || '-' %></td>
+                  </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+            
+            <!-- Personality History -->
+            <div class="section-header">
+              <h3>個性（バイアス）履歴</h3>
+              <button class="expand-btn" onclick="toggleTableExpand('personality-<%= sensor.sensorId %>-wrapper')">
+                展開 ⌄
+              </button>
+            </div>
+            <div class="table-wrapper personality-table" id="personality-<%= sensor.sensorId %>-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>日付</th>
+                    <th>時刻</th>
+                    <th>バイアス設定</th>
+                  </tr>
+                </thead>
+                <tbody id="personality-<%= sensor.sensorId %>">
+                  <% (sensor.personality || []).forEach(item => { %>
+                  <tr>
+                    <td><%= item.date || '-' %></td>
+                    <td><%= item.time || '-' %></td>
+                    <td><%= item.content || '-' %></td>
+                  </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-        <!-- Data Table -->
-        <h3>取得データ</h3>
-        <div class="table-wrapper">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>年月日</th>
-                <th>時刻</th>
-                <% for(let i = 1; i <= 16; i++) { %>
-                <th><%= i %></th>
-                <% } %>
-                <th>平均温度</th>
-                <th>状態</th>
-              </tr>
-            </thead>
-            <tbody id="tbody-<%= sensor.sensorId %>">
-              <% sensor.data.forEach(data => { %>
-              <tr class="<%= data.isAbnormal ? 'table-danger' : '' %>">
-                <td><%= data.acquisitionDate %></td>
-                <td><%= data.acquisitionTime %></td>
-                <% data.temperatures.forEach(temp => { %>
-                <td><%= temp %></td>
-                <% }); %>
-                <td><%= data.averageTemperature?.toFixed(1) %> °C</td>
-                <td><%= data.isAbnormal ? '異常' : '正常' %></td>
-              </tr>
-              <% }); %>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="section-container">
-
-        </div>
-        <!-- Alert Section -->
-        <div class="section-header">
-          <h3>アラート</h3>
-        </div>
-        <div class="table-wrapper alert-table" id="alerts-<%= sensor.sensorId %>-wrapper">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>年月日</th>
-                <th>時刻</th>
-                <th>事象</th>
-              </tr>
-            </thead>
-            <tbody id="alerts-<%= sensor.sensorId %>">
-              <% sensor.alerts?.forEach(alert => { %>
-              <tr class="<%= alert.eventType === 'ABNORMAL_DATA' || alert.eventType === 'SENSOR_ERROR' ? 'table-danger' : '' %>">
-                <td><%= alert.date %></td>
-                <td><%= alert.time %></td>
-                <td><%= alert.event %></td>
-              </tr>
-              <% }); %>
-            </tbody>
-          </table>
-        </div>
-        <!-- Settings Change Section -->
-        <div class="section-header">
-          <h3>設定変更</h3>
-        </div>
-        <div class="table-wrapper settings-table" id="settings-<%= sensor.sensorId %>-wrapper">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>年月日</th>
-                <th>時刻</th>
-                <th>設定変更内容</th>
-              </tr>
-            </thead>
-            <tbody id="settings-<%= sensor.sensorId %>">
-              <% sensor.settings?.forEach(setting => { %>
-              <tr>
-                <td><%= setting.date %></td>
-                <td><%= setting.time %></td>
-                <td><%= setting.content %></td>
-              </tr>
-              <% }); %>
-            </tbody>
-          </table>
-        </div>
-        <!-- Personality (Bias) Section -->
-        <div class="section-header">
-          <h3>個性(バイアス)</h3>
-        </div>
-        <div class="table-wrapper personality-table" id="personality-<%= sensor.sensorId %>-wrapper">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>年月日</th>
-                <th>時刻</th>
-                <th>個性(バイアス)</th>
-              </tr>
-            </thead>
-            <tbody id="personality-<%= sensor.sensorId %>">
-              <% sensor.personality?.forEach(item => { %>
-              <tr>
-                <td><%= item.date %></td>
-                <td><%= item.time %></td>
-                <td><%= item.content %></td>
-              </tr>
-              <% }); %>
-            </tbody>
-          </table>
-        </div>
+        <% }); %>
       </div>
     </div>
-    <% }); %>
+
+    <!-- Server Tab Content -->
+    <div id="serverTab" class="tab-content">
+      <h2 class="server-title">サーバー情報</h2>
+      
+      <div class="server-stats">
+        <!-- System Status Card -->
+        <div class="stat-card system-status">
+          <div class="stat-header">
+            <h3 class="stat-title">
+              <span class="stat-icon">⚡</span>
+              システム状態
+            </h3>
+            <span class="last-updated" id="status-last-updated">最終更新: <%= new Date().toLocaleString('ja-JP') %></span>
+          </div>
+          <div class="stat-content" id="system-status">
+            <table class="data-table status-table">
+              <tr>
+                <th>MongoDB接続状態</th>
+                <td id="mongodb-status">接続中</td>
+              </tr>
+              <tr>
+                <th>センサー数</th>
+                <td id="sensor-count"><%= latestReadings.length %></td>
+              </tr>
+              <tr>
+                <th>アクティブセンサー</th>
+                <td id="active-sensors"><%= latestReadings.length %></td>
+              </tr>
+              <tr>
+                <th>最終データ受信</th>
+                <td id="last-data-received">
+                  <%= new Date().toLocaleString('ja-JP', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                  }) %>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+        
+        <!-- Other stat cards... -->
+      </div>
+    </div>
   </div>
 </div>
-
+<link rel="stylesheet" href="/styles.css">
 <style>
   /* Base styles */
   * {
@@ -149,17 +224,6 @@
     color: #333;
   }
 
-  header {
-    background-color: #333;
-    color: #fff;
-    padding: 1rem;
-    text-align: center;
-  }
-
-  main {
-    padding: 1rem;
-  }
-
   h1 {
     font-size: 24px;
     color: #333;
@@ -167,19 +231,8 @@
     text-align: center;
   }
 
-  h2,
-  h3 {
+  h2, h3 {
     margin: 0.5rem 0;
-  }
-
-  .container {
-    width: 100%;
-    margin: 0 auto;
-  }
-
-  #sensor-data,
-  #alerts {
-    margin-bottom: 2rem;
   }
 
   /* Sensor panels grid layout */
@@ -190,41 +243,28 @@
     margin-top: 20px;
   }
 
-  /* Card styles */
-  .card {
-    border: 1px solid #ddd;
+  /* Card styles for sensor data sections */
+  .sensor-data-section {
+    background-color: white;
     border-radius: 8px;
-    margin-bottom: 15px;
-    background-color: #fff;
+    padding: 15px;
+    margin-bottom: 20px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
-  .card-header {
-    background-color: #4a90e2;
-    color: white;
-    padding: 12px 15px;
-    border-radius: 8px 8px 0 0;
-    font-weight: bold;
-  }
-
-  .card-body {
-    padding: 15px;
-  }
-
-  /* Section headers */
-  .card-body h3 {
-    font-size: 16px;
+  .sensor-title {
+    font-size: 18px;
     color: #2c3e50;
-    margin-bottom: 10px;
-    padding-bottom: 5px;
-    border-bottom: 2px solid #4a90e2;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #3498db;
   }
 
-  /* Table styles */
+  /* Table styling */
   .table-wrapper {
     max-height: 300px;
     overflow-y: auto;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
     border-radius: 4px;
     border: 1px solid #e0e0e0;
   }
@@ -232,690 +272,651 @@
   .data-table {
     width: 100%;
     border-collapse: collapse;
-    background-color: white;
-  }
-
-  .table-wrapper .data-table tr>th {
-    padding: 8px;
-    text-align: center;
-    border: 1px solid #e0e0e0;
-    font-size: 14px;
-    background-color: #96dcf8;
-
-  }
-
-  .data-table td {
-    padding: 8px;
-    text-align: center;
-    border: 1px solid #e0e0e0;
-    font-size: 14px;
   }
 
   .data-table th {
-    background-color: #f5f6fa;
-    color: #2c3e50;
+    background-color: #4a90e2;
+    color: white;
+    padding: 10px;
+    text-align: left;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .data-table td {
+    padding: 6px 8px;
+    font-size: 0.9rem;
+    border-bottom: 1px solid #eee;
+  }
+
+  .data-table th {
+    padding: 8px;
+    font-size: 0.9rem;
+    white-space: nowrap;
+  }
+
+  .data-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+
+  /* Sensor data table specific styles */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+
+  .data-table th,
+  .data-table td {
+    text-align: center;
+    padding: 8px;
+    border: 1px solid #ddd;
+    white-space: nowrap;
+  }
+
+  .data-table thead th {
+    background-color: #4a90e2;
     font-weight: bold;
     position: sticky;
     top: 0;
     z-index: 1;
   }
 
-  /* Temperature color coding */
-  .high-temp {
-    background-color: #ffe5e5;
+  /* Column widths */
+  .data-table th:nth-child(1), /* 年月日 */
+  .data-table td:nth-child(1) {
+    width: 100px;
   }
 
-  .low-temp {
-    background-color: #e5e5ff;
+  .data-table th:nth-child(2), /* 時刻 */
+  .data-table td:nth-child(2) {
+    width: 100px;
   }
 
-  .normal-temp {
-    background-color: #e6ffe6;
+  .data-table th:nth-child(n+3):nth-child(-n+18), /* データ1-16 */
+  .data-table td:nth-child(n+3):nth-child(-n+18) {
+    width: 50px;
   }
 
-  /* Alert styling */
+  .data-table th:nth-child(19), /* 平均温度 */
+  .data-table td:nth-child(19) {
+    width: 80px;
+  }
+
+  .data-table th:nth-child(20), /* 状態 */
+  .data-table td:nth-child(20) {
+    width: 60px;
+  }
+
   .table-danger {
-    background-color: #fff5f5;
-    color: #c53030;
+    background-color: #ffebee;
   }
 
-  /* Scrollbar styling */
-  .table-wrapper::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+  /* Hover effect */
+  .data-table tbody tr:hover {
+    background-color: #f5f5f5;
   }
 
-  .table-wrapper::-webkit-scrollbar-track {
-    background: #f1f1f1;
+  /* Table wrapper for scrolling */
+  .table-wrapper {
+    max-height: 400px;
+    overflow-x: auto;
+    overflow-y: auto;
+    margin-bottom: 1em;
+    border: 1px solid #dee2e6;
     border-radius: 4px;
   }
 
-  .table-wrapper::-webkit-scrollbar-thumb {
-    background: #cbd5e0;
-    border-radius: 4px;
+  /* Status styling */
+  .abnormal {
+    background-color: #ffebee !important;
   }
 
-  .table-wrapper::-webkit-scrollbar-thumb:hover {
-    background: #a0aec0;
+  .alert-row {
+    background-color: #fff8e1 !important;
+  }
+
+  .alert-recovery {
+    background-color: #e3f2fd !important;
+  }
+
+  /* Temperature data specific styles */
+  .temperature-data {
+    max-width: 300px;
+    overflow: hidden;
+  }
+  
+  .temp-values {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: monospace;
+  }
+
+  .temp-values:hover {
+    white-space: normal;
+    word-wrap: break-word;
+  }
+
+  /* Highlight abnormal status */
+  td:nth-child(5)[data-value="1"] {
+    color: #dc3545;
+    font-weight: bold;
   }
 
   /* Responsive adjustments */
   @media (max-width: 768px) {
-    body {
-      padding: 10px;
-    }
-
     .sensor-panels {
       grid-template-columns: 1fr;
     }
 
-    .card-body {
-      padding: 10px;
+    .table-wrapper {
+      max-height: 200px;
     }
 
-    .data-table th,
-    .data-table td {
-      padding: 6px;
-      font-size: 13px;
-    }
-  }
-
-  /* Animation for alerts */
-  @keyframes highlight {
-    0% {
-      background-color: #fff5f5;
-    }
-
-    50% {
-      background-color: #fed7d7;
-    }
-
-    100% {
-      background-color: #fff5f5;
+    .data-table th, .data-table td {
+      padding: 8px 6px;
+      font-size: 0.9rem;
     }
   }
 
-  .table-danger {
-    animation: highlight 2s ease-in-out infinite;
+  /* Server stats cards */
+  .server-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
   }
 
-  /* Navbar styles */
-  .navbar {
-    background-color: #333;
-    padding: 1rem;
-    margin-bottom: 2rem;
+  .stat-card {
+    background-color: white;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
-  .navbar-brand {
-    color: white;
-    font-size: 1.25rem;
-    font-weight: bold;
+  /* Tab Container and Navigation Styles */
+  .tab-container {
+    margin: 20px 0;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
-  /* Connection status */
-  .connection-status {
-    position: fixed;
-    top: 10px;
-    right: 10px;
-    z-index: 1000;
-    padding: 5px 10px;
-    border-radius: 4px;
-    display: none;
-    font-size: 14px;
-  }
-
-  .connection-status.connected {
-    background-color: #4caf50;
-    color: white;
-    display: block;
-  }
-
-  .connection-status.disconnected {
-    background-color: #f44336;
-    color: white;
-    display: block;
-  }
-
-  /* Additional utility classes */
-  .abnormal {
-    background-color: #ffebee;
-  }
-
-  .alert-history {
-    max-height: 300px;
-    overflow-y: auto;
-  }
-
-  /* Grid layout for sensors */
-  .row {
+  .tab-nav {
     display: flex;
-    flex-wrap: wrap;
-    margin: -10px;
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #e9ecef;
+    border-radius: 8px 8px 0 0;
+    padding: 4px 4px 0 4px;
+    gap: 2px;
   }
 
-  .col-md-4 {
-    flex: 0 0 calc(33.333% - 20px);
-    margin: 10px;
-  }
-
-  /* Table styles */
-  .table-wrapper {
-    max-height: 300px;
-    overflow-y: auto;
-    margin-bottom: 15px;
-    border-radius: 4px;
-    border: 1px solid #e0e0e0;
-    position: relative;
-    scroll-behavior: smooth;
-    /* Add smooth scrolling */
-  }
-
-  /* Special styles for alert, settings and personality tables to make scrollbars more prominent when data increases */
-  .table-wrapper.alert-table,
-  .table-wrapper.settings-table,
-  .table-wrapper.personality-table {
-    max-height: 200px;
-    /* Smaller default height */
-    transition: max-height 0.3s ease;
-    /* Smooth height transition */
-  }
-
-  /* When tables have more data, increase the height */
-  .table-wrapper.alert-table.expanded,
-  .table-wrapper.settings-table.expanded,
-  .table-wrapper.personality-table.expanded {
-    max-height: 400px;
-    /* More space for expanded content */
-  }
-
-  /* Scrollbar indicator for tables with more content */
-  .table-wrapper::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 15px;
-    background: linear-gradient(to top, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0));
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-
-  .table-wrapper.has-more-content::after {
-    opacity: 1;
-    /* Show gradient when there's more content */
-  }
-
-  /* Ensure scrollbars are always visible on supported browsers */
-  .table-wrapper {
-    scrollbar-width: thin;
-    /* Firefox */
-    scrollbar-color: #cbd5e0 #f1f1f1;
-    /* Firefox */
-  }
-
-  /* Scrollbar styling for WebKit browsers */
-  .table-wrapper::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-    background-color: #f1f1f1;
-  }
-
-  .table-wrapper::-webkit-scrollbar-thumb {
-    background-color: #cbd5e0;
-    border-radius: 10px;
-    transition: background-color 0.3s ease;
-  }
-
-  .table-wrapper::-webkit-scrollbar-thumb:hover {
-    background-color: #a0aec0;
-  }
-
-  /* Expand button for tables */
-  .expand-table-btn {
-    display: inline-block;
-    margin-left: 10px;
-    font-size: 12px;
-    color: #4a90e2;
+  .tab-button {
+    flex: 1;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #495057;
+    background-color: transparent;
+    border: none;
+    border-radius: 8px 8px 0 0;
     cursor: pointer;
-    user-select: none;
+    transition: all 0.2s ease;
+    position: relative;
+    outline: none;
   }
 
-  .expand-table-btn:hover {
-    text-decoration: underline;
+  .tab-button:hover {
+    background-color: #e9ecef;
+    color: #228be6;
   }
 
-  /* Section headers with expand toggle */
+  .tab-button.active {
+    background-color: #228be6;
+    color : white;
+    border: none;
+    border-bottom: 2px solid #228be6;
+    margin-bottom: -2px;
+  }
+
+  .tab-button:focus {
+    box-shadow: 0 0 0 2px rgba(34, 139, 230, 0.3);
+  }
+
+  /* Tab Content Styles */
+  .tab-content {
+    display: none;
+    padding: 20px;
+    background: white;
+    border-radius: 0 0 8px 8px;
+  }
+
+  .tab-content.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .tab-button {
+      font-size: 14px;
+      padding: 10px 16px;
+    }
+  }
+
+  /* Additional styles for enhanced components */
+  .sensor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .sensor-icon,
+  .tab-icon,
+  .stat-icon {
+    margin-right: 8px;
+  }
+
+  .sensor-status {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .sensor-status.active {
+    background-color: rgba(76, 201, 240, 0.1);
+    color: var(--success);
+  }
+
+  .sensor-status.inactive {
+    background-color: rgba(247, 37, 133, 0.1);
+    color: var(--warning);
+  }
+
   .section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin: 20px 0 12px;
   }
 
-  @media (max-width: 992px) {
-    .col-md-4 {
-      flex: 0 0 calc(50% - 20px);
-    }
+  .data-count {
+    font-size: 14px;
+    color: var(--gray-600);
+    font-weight: normal;
   }
 
-  @media (max-width: 768px) {
-    .col-md-4 {
-      flex: 0 0 calc(100% - 20px);
-    }
+  .section-controls {
+    display: flex;
+    gap: 8px;
   }
+
+  .refresh-btn,
+  .expand-btn {
+    background: none;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--gray-600);
+    transition: var(--transition);
+  }
+
+  .refresh-btn:hover,
+  .expand-btn:hover {
+    background-color: var(--gray-100);
+    color: var(--primary);
+  }
+
+  .stat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .last-updated {
+    font-size: 12px;
+    color: var(--gray-600);
+  }
+
+  .server-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: 24px;
+  }
+
+  /* Animation for refresh button */
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .refresh-btn.spinning .refresh-icon {
+    display: inline-block;
+    animation: spin 1s linear infinite;
+  }
+
+
+  
 </style>
 
-
-<script src="/socket.io/socket.io.js"></script>
 <script>
-  // Add scroll position memory for tables
-  const scrollPositions = {};
-
-  // Function to save scroll position
-  function saveScrollPosition(tableWrapper) {
-    const sensorId = tableWrapper.closest('.card').dataset.sensorId;
-    const tableId = tableWrapper.id;
-    const key = `${sensorId}-${tableId}`;
-    scrollPositions[key] = tableWrapper.scrollTop;
-  }
-
-  // Function to restore scroll position
-  function restoreScrollPosition(tableWrapper) {
-    const sensorId = tableWrapper.closest('.card').dataset.sensorId;
-    const tableId = tableWrapper.id;
-    const key = `${sensorId}-${tableId}`;
-    if (scrollPositions[key] !== undefined) {
-      tableWrapper.scrollTop = scrollPositions[key];
-    }
-  }
-
+  // Function to update sensor data display
   function updateSensorData(data) {
-    console.log('Updating sensor data:', data); // Logging for debugging
-    // Update current temperature display
-    const currentTempDisplay = document.getElementById(`current-temp-${data.sensorId}`);
-    if (currentTempDisplay) {
-      currentTempDisplay.textContent = `${data.averageTemperature.toFixed(1)} °C`;
-    }
-
-    // Update data table
+    if (!data || !data.sensorId) return;
+    
     const tbody = document.getElementById(`tbody-${data.sensorId}`);
     if (!tbody) return;
-
+    
+    // Create a new row for the data
     const row = document.createElement('tr');
     row.className = data.isAbnormal ? 'table-danger' : '';
-
-    row.innerHTML = `
-        <td>${data.acquisitionDate}</td>
-        <td>${data.acquisitionTime}</td>
-        ${data.temperatures.map(temp => `<td>${temp}</td>`).join('')}
-        <td>${data.averageTemperature.toFixed(1)} °C</td>
-        <td>${data.isAbnormal ? '異常' : '正常'}</td>
+    
+    // Format date and time
+    const date = new Date(data.timestamp);
+    const formattedDate = date.toLocaleDateString('ja-JP', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).replace(/\//g, '-');
+    
+    const formattedTime = date.toLocaleTimeString('ja-JP', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    });
+    
+    // Create row content
+    let rowHTML = `
+      <td>${formattedDate}</td>
+      <td>${formattedTime}</td>
     `;
-
+    
+    // Add the 16 temperature readings
+    if (data.temperatures && Array.isArray(data.temperatures)) {
+      data.temperatures.forEach(temp => {
+        rowHTML += `<td>${typeof temp === 'number' ? temp.toFixed(1) : '--'}</td>`;
+      });
+      // Fill remaining slots if less than 16 readings
+      for (let i = data.temperatures.length; i < 16; i++) {
+        rowHTML += '<td>--</td>';
+      }
+    } else {
+      // If no temperature data, fill all 16 slots with placeholder
+      for (let i = 0; i < 16; i++) {
+        rowHTML += '<td>--</td>';
+      }
+    }
+    
+    // Add average temperature and status
+    const avgTemp = data.temperatures ? 
+      (data.temperatures.reduce((sum, temp) => sum + (typeof temp === 'number' ? temp : 0), 0) / data.temperatures.length).toFixed(1) :
+      '--';
+    
+    rowHTML += `
+      <td>${avgTemp} °C</td>
+      <td>${data.isAbnormal ? '異常' : '正常'}</td>
+    `;
+    
+    row.innerHTML = rowHTML;
+    
+    // Add to the beginning of the table
     tbody.insertBefore(row, tbody.firstChild);
-
+    
     // Keep only the latest 100 rows
     while (tbody.children.length > 100) {
       tbody.removeChild(tbody.lastChild);
     }
-
-    // Auto-scroll to top if user is at top
-    const container = tbody.closest('.table-wrapper');
-    if (container && container.scrollTop <= 50) {
-      container.scrollTop = 0;
-    }
   }
-
-  function updateAlertTable(data) {
+  
+  // Function to handle alert updates
+  function handleAlert(data) {
+    if (!data || !data.sensorId) return;
+    
     const alertsTable = document.getElementById(`alerts-${data.sensorId}`);
     if (!alertsTable) return;
-
-    const wrapper = document.getElementById(`alerts-${data.sensorId}-wrapper`);
-    if (wrapper) {
-      saveScrollPosition(wrapper);
-    }
-
+    
+    // Create a new row for the alert
     const row = document.createElement('tr');
-    // Add the proper class based on event type
-    if (data.eventType === 'ABNORMAL_DATA' || data.eventType === 'SENSOR_ERROR') {
-      row.className = 'table-danger';
-    }
-
+    row.className = data.eventType && data.eventType.includes('RECOVERY') ? 'alert-recovery' : 'alert-row';
+    
+    // Create row content
     row.innerHTML = `
-        <td>${data.date}</td>
-        <td>${data.time}</td>
-        <td>${data.event}</td>
+      <td>${data.date || '-'}</td>
+      <td>${data.time || '-'}</td>
+      <td>${data.event || '-'}</td>
     `;
-
+    
+    // Add to the beginning of the table
     alertsTable.insertBefore(row, alertsTable.firstChild);
-
-    // Keep only the latest 50 rows
-    while (alertsTable.children.length > 50) {
+    
+    // Keep only the latest 10 rows
+    while (alertsTable.children.length > 10) {
       alertsTable.removeChild(alertsTable.lastChild);
     }
-
-    // Auto-scroll to top if user is at top
-    if (wrapper) {
-      if (wrapper.scrollTop <= 50) {
-        wrapper.scrollTop = 0;
-      } else {
-        restoreScrollPosition(wrapper);
-      }
-
-      // Check if scrollbar is needed
-      if (wrapper.scrollHeight > wrapper.clientHeight) {
-        wrapper.classList.add('has-more-content');
-      }
-    }
   }
-
-  function updateSettingsTable(data) {
-    console.log('Updating settings table with:', data);
+  
+  // Function to handle settings updates
+  function handleSettingChange(data) {
+    if (!data || !data.sensorId) return;
+    
     const settingsTable = document.getElementById(`settings-${data.sensorId}`);
-    if (!settingsTable) {
-      console.warn('Settings table not found for sensor:', data.sensorId);
-      return;
+    if (!settingsTable) return;
+    
+    // Format the content
+    let content = data.content;
+    if (!content && data.changeType) {
+      if (data.changeType === 'threshold' && data.value) {
+        const { high, low } = data.value;
+        content = `しきい値（高: ${high}°C / 低: ${low}°C）`;
+      } else if (data.changeType === 'interval' && data.value) {
+        content = `読取間隔変更: ${data.value}ms`;
+      } else {
+        content = `${data.changeType}の設定変更`;
+      }
     }
-
-    const wrapper = document.getElementById(`settings-${data.sensorId}-wrapper`);
-    if (wrapper) {
-      saveScrollPosition(wrapper);
-    }
-
+    
+    // Create a new row
     const row = document.createElement('tr');
-    // Handle both formats of data (raw and formatted)
     row.innerHTML = `
-        <td>${data.date || ''}</td>
-        <td>${data.time || ''}</td>
-        <td>${data.content || (data.changeType && data.value ? `${data.changeType}: ${JSON.stringify(data.value)}` : '')}</td>
+      <td>${data.date || '-'}</td>
+      <td>${data.time || '-'}</td>
+      <td>${content || '-'}</td>
     `;
-
+    
+    // Add to the beginning of the table
     settingsTable.insertBefore(row, settingsTable.firstChild);
-
-    // Keep only the latest 50 rows
-    while (settingsTable.children.length > 50) {
-      settingsTable.removeChild(settingsTable.lastChild);
-    }
-
-    // Auto-scroll to top if user is at top
-    if (wrapper) {
-      if (wrapper.scrollTop <= 50) {
-        wrapper.scrollTop = 0;
-      } else {
-        restoreScrollPosition(wrapper);
-      }
-
-      // Check if scrollbar is needed
-      if (wrapper.scrollHeight > wrapper.clientHeight) {
-        wrapper.classList.add('has-more-content');
-      }
-    }
   }
-
-  function updatePersonalityTable(data) {
-    console.log('Updating personality table with:', data);
+  
+  // Function to handle personality updates
+  function handlePersonalityUpdate(data) {
+    if (!data || !data.sensorId) return;
+    
     const personalityTable = document.getElementById(`personality-${data.sensorId}`);
-    if (!personalityTable) {
-      console.warn('Personality table not found for sensor:', data.sensorId);
-      return;
-    }
-
-    const wrapper = document.getElementById(`personality-${data.sensorId}-wrapper`);
-    if (wrapper) {
-      saveScrollPosition(wrapper);
-    }
-
-    const row = document.createElement('tr');
-    // Handle both formats of data (raw and formatted)
-    row.innerHTML = `
-        <td>${data.date || ''}</td>
-        <td>${data.time || ''}</td>
-        <td>${data.content || (data.biasType && data.biasValue ? `${data.biasType}: ${JSON.stringify(data.biasValue)}` : '')}</td>
-    `;
-
-    personalityTable.insertBefore(row, personalityTable.firstChild);
-
-    // Keep only the latest 50 rows
-    while (personalityTable.children.length > 50) {
-      personalityTable.removeChild(personalityTable.lastChild);
-    }
-
-    // Auto-scroll to top if user is at top
-    if (wrapper) {
-      if (wrapper.scrollTop <= 50) {
-        wrapper.scrollTop = 0;
+    if (!personalityTable) return;
+    
+    // Format the content
+    let content = data.content;
+    if (!content && data.biasType) {
+      if (data.biasType === 'temperature_offset' && data.biasValue) {
+        const offset = data.biasValue.offset;
+        const sign = offset > 0 ? '+' : '';
+        content = `温度補正バイアス: ${sign}${offset}°C`;
+      } else if (data.biasType === 'sensitivity' && data.biasValue) {
+        content = `感度設定: ${data.biasValue.level}`;
       } else {
-        restoreScrollPosition(wrapper);
-      }
-
-      // Check if scrollbar is needed
-      if (wrapper.scrollHeight > wrapper.clientHeight) {
-        wrapper.classList.add('has-more-content');
+        content = `${data.biasType}の設定`;
       }
     }
+    
+    // Create a new row
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${data.date || '-'}</td>
+      <td>${data.time || '-'}</td>
+      <td>${content || '-'}</td>
+    `;
+    
+    // Add to the beginning of the table
+    personalityTable.insertBefore(row, personalityTable.firstChild);
   }
-
-  // Automatic refresh function
-  function setupAutoRefresh() {
-    console.log('Setting up auto-refresh'); // Logging for debugging
-    // Request new data every 30 seconds if no real-time updates
-    setInterval(() => {
-      console.log('Fetching new sensor data'); // Logging for debugging
-      fetch('/api/sensor-data')
-        .then(response => response.json())
-        .then(readings => {
-          console.log('Received sensor data:', readings); // Logging for debugging
-          readings.forEach(data => {
-            if (data) updateSensorData(data);
+  
+  // Function to fetch latest data every second
+  setInterval(() => {
+    fetch('/api/sensor-data/latest')
+      .then(response => response.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          data.forEach(sensorData => {
+            if (sensorData) updateSensorData(sensorData);
           });
-        })
-        .catch(error => console.error('Error fetching sensor data:', error));
-
-      fetch('/api/alerts')
-        .then(response => response.json())
-        .then(alerts => {
-          alerts.forEach(data => {
-            if (data) updateAlertTable(data);
+        }
+      })
+      .catch(error => console.error('Error fetching sensor data:', error));
+  }, 1000);
+  
+  // Fetch alerts, settings, etc. less frequently (every 5 seconds)
+  setInterval(() => {
+    // Fetch latest alerts
+    fetch('/api/alerts')
+      .then(response => response.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          data.forEach(alert => {
+            if (alert) handleAlert(alert);
           });
-        })
-        .catch(error => console.error('Error fetching alerts:', error));
+        }
+      })
+      .catch(error => console.error('Error fetching alerts:', error));
+      
+    // Fetch latest settings
+    fetch('/api/settings')
+      .then(response => response.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          data.forEach(setting => {
+            if (setting) handleSettingChange(setting);
+          });
+        }
+      })
+      .catch(error => console.error('Error fetching settings:', error));
+      
+    // Fetch latest personality data
+    fetch('/api/personality')
+      .then(response => response.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          data.forEach(item => {
+            if (item) handlePersonalityUpdate(item);
+          });
+        }
+      })
+      .catch(error => console.error('Error fetching personality data:', error));
+  }, 5000);
 
-      fetch('/api/settings')
-        .then(response => {
-          console.log('Settings response status:', response.status);
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          return response.json();
-        })
-        .then(settings => {
-          console.log('Received settings:', settings);
-          if (Array.isArray(settings)) {
-            settings.forEach(data => {
-              if (data) updateSettingsTable(data);
-            });
-          }
-        })
-        .catch(error => {
-          console.error('Error fetching settings:', error);
-          console.error('Error details:', error.message);
-        });
-
-      fetch('/api/personality')
-        .then(response => {
-          console.log('Personality response status:', response.status);
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          return response.json();
-        })
-        .then(personalities => {
-          console.log('Received personalities:', personalities);
-          if (Array.isArray(personalities)) {
-            personalities.forEach(data => {
-              if (data) updatePersonalityTable(data);
-            });
-          }
-        })
-        .catch(error => {
-          console.error('Error fetching personality data:', error);
-          console.error('Error details:', error.message);
-        });
-    }, 30000);
-  }
-
-  // Setup table expansion functionality
+  // Tab switching logic
   document.addEventListener('DOMContentLoaded', () => {
-    // Handle table expansion
-    const expandButtons = document.querySelectorAll('.expand-table-btn');
-    expandButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const targetId = btn.getAttribute('data-target');
-        const tableWrapper = document.getElementById(targetId);
+    // Set initial active tab
+    const defaultTab = 'sensorTab';
+    const defaultBtn = document.getElementById('sensorTabBtn');
+    switchTab(defaultTab, defaultBtn);
 
-        if (tableWrapper.classList.contains('expanded')) {
-          tableWrapper.classList.remove('expanded');
-          btn.textContent = '展開'; // "Expand" in Japanese
-        } else {
-          tableWrapper.classList.add('expanded');
-          btn.textContent = '折りたたむ'; // "Collapse" in Japanese
+    // Initialize all expand/collapse buttons with proper state
+    document.querySelectorAll('.section-header .expand-btn').forEach(btn => {
+      const wrapperId = btn.getAttribute('data-wrapper-id');
+      if (wrapperId) {
+        const wrapper = document.getElementById(wrapperId);
+        if (wrapper) {
+          updateExpandButtonText(btn, wrapper.classList.contains('expanded'));
         }
-      });
-    });
-
-    // Check which tables need scrollbars
-    const checkScrollNeeded = () => {
-      const tableWrappers = document.querySelectorAll('.table-wrapper');
-      tableWrappers.forEach(wrapper => {
-        const hasScrollbar = wrapper.scrollHeight > wrapper.clientHeight;
-
-        if (hasScrollbar) {
-          wrapper.classList.add('has-more-content');
-        } else {
-          wrapper.classList.remove('has-more-content');
-        }
-      });
-    };
-
-    // Initial check for scrollbars
-    checkScrollNeeded();
-
-    // Save scroll positions
-    const tableWrappers = document.querySelectorAll('.table-wrapper');
-    tableWrappers.forEach(wrapper => {
-      wrapper.addEventListener('scroll', () => {
-        saveScrollPosition(wrapper);
-      });
-    });
-
-    // When data is added, check if scrollbars are needed
-    const observer = new MutationObserver(mutations => {
-      mutations.forEach(mutation => {
-        if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
-          checkScrollNeeded();
-        }
-      });
-    });
-
-    // Watch for changes in table bodies
-    document.querySelectorAll('tbody').forEach(tbody => {
-      observer.observe(tbody, {
-        childList: true
-      });
+      }
     });
   });
 
-  // Initialize auto-refresh
-  setupAutoRefresh();
-
-  // Initialize Socket.IO
-  const socket = io();
-
-  // Log connection status
-  socket.on('connect', () => {
-    console.log('Connected to server');
-    const connectionStatus = document.getElementById('connectionStatus');
-    if (connectionStatus) {
-      connectionStatus.textContent = 'Connected';
-      connectionStatus.className = 'connection-status connected';
-    }
-  });
-
-  socket.on('disconnect', () => {
-    console.log('Disconnected from server');
-    const connectionStatus = document.getElementById('connectionStatus');
-    if (connectionStatus) {
-      connectionStatus.textContent = 'Disconnected';
-      connectionStatus.className = 'connection-status disconnected';
-    }
-  });
-
-  // Set up Socket.IO event listeners (only once)
-  socket.on('newSensorData', (data) => {
-    console.log('Received new sensor data via Socket.IO:', data);
-    updateSensorData(data);
-  });
-
-  socket.on('alert', (data) => {
-    console.log('Received alert via Socket.IO:', data);
-    updateAlertTable(data);
-  });
-
-  socket.on('settingChange', (data) => {
-    console.log('Received settings change via Socket.IO:', data);
-    // Format the setting data for display
-    const formattedData = {
-      sensorId: data.sensorId,
-      date: data.date,
-      time: data.time,
-      content: formatSettingForDisplay(data)
-    };
-    updateSettingsTable(formattedData);
-  });
-
-  socket.on('personalityUpdate', (data) => {
-    console.log('Received personality update via Socket.IO:', data);
-    // Format the personality data for display
-    const formattedData = {
-      sensorId: data.sensorId,
-      date: data.date,
-      time: data.time,
-      content: formatPersonalityForDisplay(data)
-    };
-    updatePersonalityTable(formattedData);
-  });
-
-  // Helper functions to format the data nicely on the client side
-  function formatSettingForDisplay(setting) {
-    if (setting.changeType === 'threshold' && setting.value) {
-      const {
-        high,
-        low
-      } = setting.value;
-      return `しきい値（高: ${high}°C / 低: ${low}°C）`;
-    } else if (setting.changeType === 'interval' && setting.value) {
-      return `読取間隔変更: ${setting.value}ms`;
-    }
-    // If already formatted with content property, use that
-    if (setting.content) {
-      return setting.content;
-    }
-    return `${setting.changeType}の設定変更`;
+  function switchTab(tabId, buttonElement) {
+    // Remove active class from all tabs and buttons
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.style.display = 'none';
+        tab.classList.remove('active');
+    });
+    document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Show selected tab and activate button
+    const selectedTab = document.getElementById(tabId);
+    selectedTab.style.display = 'block';
+    selectedTab.classList.add('active');
+    buttonElement.classList.add('active');
+    
+    // Store the active tab in localStorage
+    localStorage.setItem('activeTab', tabId);
+    localStorage.setItem('activeTabBtn', buttonElement.id);
   }
 
-  function formatPersonalityForDisplay(personality) {
-    if (personality.biasType === 'temperature_offset' && personality.biasValue) {
-      const offset = personality.biasValue.offset;
-      const sign = offset > 0 ? '+' : '';
-      return `温度補正バイアス: ${sign}${offset}°C`;
-    } else if (personality.biasType === 'sensitivity' && personality.biasValue) {
-      return `感度設定: ${personality.biasValue.level}`;
+  // Restore tab state on page load
+  const savedTab = localStorage.getItem('activeTab');
+  const savedTabBtn = localStorage.getItem('activeTabBtn');
+  if (savedTab && savedTabBtn) {
+    const btn = document.getElementById(savedTabBtn);
+    if (btn) {
+      switchTab(savedTab, btn);
     }
-    // If already formatted with content property, use that
-    if (personality.content) {
-      return personality.content;
-    }
-    return `${personality.biasType}の設定`;
   }
+
+  // Updated function to toggle table expansion with animation
+  function toggleTableExpand(wrapperId) {
+    const wrapper = document.getElementById(wrapperId);
+    if (!wrapper) return;
+    
+    // Toggle expanded class
+    wrapper.classList.toggle('expanded');
+    
+    // Update button text
+    const isExpanded = wrapper.classList.contains('expanded');
+    const btn = event.currentTarget;
+    updateExpandButtonText(btn, isExpanded);
+    
+    // Check for scroll content after expansion
+    setTimeout(() => {
+      const hasMoreContent = wrapper.scrollHeight > wrapper.clientHeight;
+      wrapper.classList.toggle('has-more-content', hasMoreContent);
+    }, 300); // Wait for animation to complete
+  }
+
+  // Helper function to update button text
+  function updateExpandButtonText(btn, isExpanded) {
+    btn.textContent = isExpanded ? '折りたたむ ⌃' : '展開 ⌄';
+    btn.setAttribute('aria-expanded', isExpanded);
+  }
+
+  function refreshData(sensorId) {
+    const btn = event.currentTarget;
+    btn.classList.add('spinning');
+    
+    // Simulate refresh - replace with actual data fetch
+    setTimeout(() => {
+        btn.classList.remove('spinning');
+    }, 1000);
+  }
+
+  // Add scroll detection for table wrappers
+  document.querySelectorAll('.table-wrapper').forEach(wrapper => {
+    wrapper.addEventListener('scroll', () => {
+        const hasMore = wrapper.scrollHeight > wrapper.clientHeight;
+        wrapper.classList.toggle('has-more-content', hasMore);
+    });
+  });
 </script>

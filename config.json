@@ -9,7 +9,9 @@
         "i2cDevicePath": "/dev/i2c-0"
     },
     "mongodb": {
-        "uri": "mongodb://localhost:27017/temperature_db"
+        "uri": "mongodb+srv://AIBC:2324@clustertest.fsaqy.mongodb.net/?retryWrites=true&w=majority&appName=ClusterTest",
+        "dbName": "sensorData",
+        "collectionName": "temperatureReadings"
     },
     "server": {
         "port": 3000,

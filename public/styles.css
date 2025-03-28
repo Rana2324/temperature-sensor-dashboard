@@ -1,20 +1,244 @@
-/* Table styles */
+/* Modern Color Palette */
+:root {
+    --primary: #4361ee;
+    --primary-light: #4895ef;
+    --secondary: #3f37c9;
+    --success: #4cc9f0;
+    --warning: #f72585;
+    --info: #4895ef;
+    --light: #f8f9fa;
+    --dark: #2b2d42;
+    --gray-100: #f8f9fa;
+    --gray-200: #e9ecef;
+    --gray-300: #dee2e6;
+    --gray-400: #ced4da;
+    --gray-500: #adb5bd;
+    --gray-600: #6c757d;
+    --gray-700: #495057;
+    --gray-800: #343a40;
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+    --transition: all 0.3s ease;
+    --tab-shadow: 0 4px 6px rgba(67, 97, 238, 0.15);
+    --tab-active-shadow: 0 8px 16px rgba(67, 97, 238, 0.2);
+}
+
+/* Base Styles */
+body {
+    font-family: 'Segoe UI', 'Meiryo', 'Hiragino Sans', sans-serif;
+    line-height: 1.6;
+    background-color: var(--gray-100);
+    color: var(--gray-800);
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Enhanced Tab Navigation */
+.tab-container {
+    margin: 20px 0;
+    background: white;
+    border-radius: 16px;
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    border: 1px solid var(--gray-200);
+}
+
+.tab-nav {
+    display: flex;
+    background: linear-gradient(to right, var(--gray-100), var(--gray-50));
+    padding: 12px;
+    gap: 8px;
+    border-bottom: 1px solid var(--gray-200);
+    position: relative;
+}
+
+.tab-button {
+    flex: 1;
+    padding: 16px 32px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--gray-600);
+    background-color: rgba(255, 255, 255, 0.8);
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    outline: none;
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 160px;
+}
+
+.tab-button:hover {
+    color: var(--primary);
+    background-color: white;
+    border-color: var(--primary-light);
+    transform: translateY(-1px);
+    box-shadow: var(--tab-shadow);
+}
+
+.tab-button.active {
+    color: white;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    border-color: transparent;
+    box-shadow: var(--tab-active-shadow);
+    transform: translateY(-2px);
+}
+
+.tab-button:focus-visible {
+    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.3);
+}
+
+.tab-icon {
+    font-size: 1.2em;
+    transition: transform 0.3s ease;
+}
+
+.tab-button:hover .tab-icon {
+    transform: scale(1.1);
+}
+
+.tab-button.active .tab-icon {
+    transform: scale(1.2);
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.tab-button span:not(.tab-icon) {
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+
+/* Add a subtle animation for tab switch */
+.tab-button::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: var(--primary);
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+}
+
+.tab-button:hover::after {
+    width: 80%;
+}
+
+.tab-button.active::after {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.5);
+}
+
+@media (max-width: 768px) {
+    .tab-nav {
+        padding: 8px;
+        gap: 6px;
+    }
+    
+    .tab-button {
+        padding: 12px 20px;
+        font-size: 14px;
+        min-width: 120px;
+    }
+    
+    .tab-icon {
+        font-size: 1.1em;
+    }
+}
+
+/* Enhanced Content Cards */
+.tab-content {
+    display: none;
+    padding: 24px;
+    background: white;
+    animation: fadeIn 0.3s ease;
+}
+
+.sensor-data-section {
+    background-color: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-md);
+    transition: var(--transition);
+}
+
+.sensor-data-section:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.sensor-title {
+    font-size: 20px;
+    color: var(--dark);
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--primary);
+}
+
+/* Enhanced Tables */
 .table-wrapper {
-    max-height: 300px;
+    max-height: 400px;
     overflow-y: auto;
-    margin-bottom: 15px;
-    border-radius: 4px;
-    border: 1px solid #e0e0e0;
+    margin-bottom: 24px;
+    border-radius: 8px;
+    border: 1px solid var(--gray-200);
+    background: white;
+    box-shadow: var(--shadow-sm);
     position: relative;
     scroll-behavior: smooth; /* Add smooth scrolling */
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.data-table th {
+    background-color: var(--primary);
+    color: white;
+    padding: 12px 16px;
+    font-weight: 600;
+    text-align: left;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.data-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--gray-200);
+    color: var(--gray-700);
+}
+
+.data-table tr:hover {
+    background-color: var(--gray-100);
 }
 
 /* Special styles for alert, settings and personality tables to make scrollbars more prominent when data increases */
 .table-wrapper.alert-table, 
 .table-wrapper.settings-table, 
 .table-wrapper.personality-table {
-    max-height: 200px; /* Smaller default height */
-    transition: max-height 0.3s ease; /* Smooth height transition */
+    max-height: 150px; /* Smaller default height */
+    transition: max-height 0.5s ease; /* Smooth height transition */
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    margin-bottom: 20px;
+    background-color: white;
+    overflow-y: auto;
 }
 
 /* When tables have more data, increase the height */
@@ -45,24 +269,28 @@
 /* Ensure scrollbars are always visible on supported browsers */
 .table-wrapper {
     scrollbar-width: thin; /* Firefox */
-    scrollbar-color: #cbd5e0 #f1f1f1; /* Firefox */
+    scrollbar-color: var(--gray-400) var(--gray-100); /* Firefox */
 }
 
-/* Scrollbar styling for WebKit browsers */
+/* Scrollbar Styling */
 .table-wrapper::-webkit-scrollbar {
     width: 8px;
     height: 8px;
-    background-color: #f1f1f1;
+}
+
+.table-wrapper::-webkit-scrollbar-track {
+    background: var(--gray-100);
+    border-radius: 4px;
 }
 
 .table-wrapper::-webkit-scrollbar-thumb {
-    background-color: #cbd5e0;
-    border-radius: 10px;
-    transition: background-color 0.3s ease;
+    background-color: var(--gray-400);
+    border-radius: 4px;
+    transition: var(--transition);
 }
 
 .table-wrapper::-webkit-scrollbar-thumb:hover {
-    background-color: #a0aec0;
+    background-color: var(--gray-500);
 }
 
 /* Expand button for tables */
@@ -70,7 +298,7 @@
     display: inline-block;
     margin-left: 10px;
     font-size: 12px;
-    color: #4a90e2;
+    color: var(--primary);
     cursor: pointer;
     user-select: none;
 }
@@ -84,4 +312,401 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin: 15px 0 10px 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.section-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin: 0;
+    display: flex;
+    align-items: center;
+}
+
+.data-count {
+    font-size: 14px;
+    color: var(--gray-600);
+    font-weight: normal;
+    margin-left: 8px;
+}
+
+/* Expand/collapse button styles */
+.expand-btn {
+    background: none;
+    border: 1px solid var(--primary-light);
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--primary);
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.expand-btn:hover {
+    background-color: rgba(67, 97, 238, 0.1);
+}
+
+.expand-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
+}
+
+/* Custom styles for alert table rows */
+.alert-table .alert-row {
+    background-color: rgba(247, 37, 133, 0.05);
+}
+
+.alert-table .alert-recovery {
+    background-color: rgba(76, 201, 240, 0.1);
+}
+
+/* Make header sticky in all special tables */
+.alert-table th,
+.settings-table th,
+.personality-table th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: var(--primary);
+    color: white;
+    padding: 10px 15px;
+    text-align: left;
+}
+
+/* Ensure tables fill the wrapper width */
+.alert-table table,
+.settings-table table,
+.personality-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Status Indicators */
+.abnormal {
+    background-color: rgba(247, 37, 133, 0.1) !important;
+    color: var(--warning) !important;
+}
+
+.alert-row {
+    background-color: rgba(247, 37, 133, 0.05) !important;
+}
+
+.alert-recovery {
+    background-color: rgba(76, 201, 240, 0.1) !important;
+    color: var(--success) !important;
+}
+
+/* Connection Status */
+.connection-status {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 1000;
+    transition: var(--transition);
+    box-shadow: var(--shadow-sm);
+}
+
+.connected {
+    background-color: rgba(76, 201, 240, 0.2);
+    color: var(--success);
+}
+
+.disconnected {
+    background-color: rgba(247, 37, 133, 0.2);
+    color: var(--warning);
+}
+
+/* Server Stats Cards */
+.server-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 24px;
+    margin-top: 24px;
+}
+
+.stat-card {
+    background-color: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: var(--shadow-md);
+    transition: var(--transition);
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.stat-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--primary-light);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { 
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Animation for expand/collapse */
+@keyframes expandTable {
+    from { max-height: 150px; }
+    to { max-height: 400px; }
+}
+
+@keyframes collapseTable {
+    from { max-height: 400px; }
+    to { max-height: 150px; }
+}
+
+.table-wrapper.expanded {
+    animation: expandTable 0.5s forwards;
+}
+
+.table-wrapper.collapsed {
+    animation: collapseTable 0.5s forwards;
+}
+
+/* Empty state styling for history tables */
+.table-wrapper:empty::before {
+    content: "データがありません";
+    display: block;
+    padding: 20px;
+    text-align: center;
+    color: var(--gray-500);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 12px;
+    }
+    
+    .tab-button {
+        padding: 10px 16px;
+        font-size: 14px;
+    }
+    
+    .sensor-data-section {
+        padding: 16px;
+    }
+    
+    .table-wrapper {
+        max-height: 300px;
+    }
+    
+    .data-table th,
+    .data-table td {
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+    
+    .server-stats {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+}
+
+/* Sensor Data Table */
+.table-wrapper {
+    overflow-x: auto;
+    margin: 20px 0;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1000px;
+}
+
+.data-table th,
+.data-table td {
+    padding: 8px;
+    text-align: center;
+    border: 1px solid #ddd;
+}
+
+.data-table th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+}
+
+.data-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.data-table tbody tr:hover {
+    background-color: #f0f0f0;
+}
+
+.table-danger {
+    background-color: #ffebee !important;
+}
+
+.table-danger:hover {
+    background-color: #ffe5e8 !important;
+}
+
+/* Responsive design for smaller screens */
+@media screen and (max-width: 1024px) {
+    .table-wrapper {
+        margin: 10px 0;
+        padding: 0 10px;
+    }
+}
+
+/* History Table Styles for Alert, Settings, and Personality sections */
+
+/* Section header styling */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 15px 0 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.section-header h3 {
+  font-size: 16px;
+  color: #2c3e50;
+  display: flex;
+  align-items: center;
+  margin: 0;
+}
+
+.data-count {
+  font-size: 12px;
+  color: #6c757d;
+  font-weight: normal;
+  margin-left: 8px;
+}
+
+/* Expand/collapse button styling */
+.expand-btn {
+  background: none;
+  border: none;
+  color: #4a90e2;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.expand-btn:hover {
+  background-color: #e3f2fd;
+}
+
+/* Table wrapper styles for collapsed and expanded states */
+.alert-table,
+.settings-table,
+.personality-table {
+  max-height: 150px;
+  transition: max-height 0.3s ease-in-out;
+  overflow: hidden;
+}
+
+.alert-table.expanded,
+.settings-table.expanded,
+.personality-table.expanded {
+  max-height: 500px;
+}
+
+/* Custom styles for each history table type */
+.alert-table {
+  border-left: 3px solid #ffcc80;
+}
+
+.settings-table {
+  border-left: 3px solid #80deea;
+}
+
+.personality-table {
+  border-left: 3px solid #b39ddb;
+}
+
+/* Alert row styling */
+.alert-row {
+  background-color: #fff8e1 !important;
+}
+
+.alert-recovery {
+  background-color: #e3f2fd !important;
+}
+
+/* Improved scrollbar styling for history tables */
+.table-wrapper::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.table-wrapper::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Section controls with refresh button */
+.section-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.refresh-btn {
+  background: none;
+  border: none;
+  color: #4a90e2;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 4px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.refresh-btn:hover {
+  background-color: #e3f2fd;
+}
+
+.refresh-btn.spinning .refresh-icon {
+  animation: spin 1s infinite linear;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }

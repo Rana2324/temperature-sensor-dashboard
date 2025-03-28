@@ -1,21 +1,240 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Temperature Sensor Dashboard</title>
+  <title>温度センサーダッシュボード</title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    body {
+      font-family: 'Meiryo', 'Hiragino Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
+    }
 
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 15px;
+    }
 
+    .navbar {
+      background-color: #2c3e50;
+      color: white;
+      padding: 15px 0;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
 
+    .navbar-brand {
+      font-size: 1.5em;
+      font-weight: bold;
+    }
+
+    .connection-status {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-size: 0.8em;
+      z-index: 1000;
+    }
+
+    .connected {
+      background-color: #27ae60;
+      color: white;
+    }
+
+    .disconnected {
+      background-color: #e74c3c;
+      color: white;
+    }
+
+    /* Enhanced tab styles */
+    .tab-container {
+      margin-top: 20px;
+      margin-bottom: 30px;
+    }
+
+    .tab-nav {
+      display: flex;
+      background-color: #f5f6fa;
+      border-radius: 8px 8px 0 0;
+      overflow: hidden;
+      border-bottom: 2px solid #3498db;
+      gap: 2px;
+      padding: 4px;
+    }
+
+    .tab-button {
+      flex: 1;
+      padding: 12px 24px;
+      border: none;
+      background-color: #f8f9fa;
+      color: #2c3e50;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 6px 6px 0 0;
+      position: relative;
+      outline: none;
+      margin: 0 2px;
+    }
+
+    .tab-button:hover {
+      background-color: #e9ecef;
+      color: #3498db;
+    }
+
+    .tab-button.active {
+      background-color: #3498db;
+      color: white;
+    }
+
+    .tab-button:focus {
+      box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.3);
+    }
+
+    .tab-content {
+      display: none;
+      padding: 20px;
+      background-color: white;
+      border-radius: 0 0 8px 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    /* Responsive tab adjustments */
+    @media (max-width: 768px) {
+      .tab-nav {
+        flex-direction: row;
+        padding: 4px;
+        gap: 4px;
+      }
+
+      .tab-button {
+        font-size: 14px;
+        padding: 10px 16px;
+      }
+    }
+
+    /* センサーデータ表示用のスタイル */
+    .sensor-data-section {
+      margin-bottom: 30px;
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .sensor-title {
+      font-size: 1.3em;
+      margin-bottom: 10px;
+      padding-bottom: 5px;
+      border-bottom: 2px solid #3498db;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+
+    .data-table th {
+      background-color: #34495e;
+      color: white;
+      padding: 12px;
+      text-align: left;
+    }
+
+    .data-table td {
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .data-table tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    .data-table tr.abnormal {
+      background-color: #ffecec;
+    }
+
+    .alert-row {
+      background-color: #fff8e1;
+    }
+
+    .alert-recovery {
+      background-color: #e3f2fd;
+    }
+
+    /* サーバーサイドのセクション用スタイル */
+    .server-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .stat-card {
+      background-color: white;
+      border-radius: 5px;
+      padding: 15px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-title {
+      font-size: 1.1em;
+      margin-bottom: 10px;
+      color: #2c3e50;
+    }
+
+    /* テーブル用スタイル */
+    .table-wrapper {
+      max-height: 300px;
+      overflow-y: auto;
+      margin-bottom: 20px;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+    }
+
+    /* レスポンシブデザイン用 */
+    @media (max-width: 768px) {
+      .tab-nav {
+        flex-direction: column;
+      }
+
+      .tab-nav button {
+        margin-bottom: 2px;
+        border-radius: 0;
+      }
+    }
+    
+  </style>
 </head>
 
 <body>
-  <div id="connectionStatus" class="connection-status">Connection Status</div>
+  <div id="connectionStatus" class="connection-status">接続状態</div>
 
   <nav class="navbar">
     <div class="container">
-      <span class="navbar-brand">Temperature Sensor Dashboard</span>
+      <span class="navbar-brand">温度センサーダッシュボード</span>
     </div>
   </nav>
 
@@ -25,6 +244,7 @@
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
+    // Socket.IO接続
     const connectionStatus = document.getElementById('connectionStatus');
     const socket = io({
       reconnectionAttempts: 5,
@@ -34,19 +254,19 @@
 
     socket.on('connect', () => {
       console.log('Connected to server');
-      connectionStatus.textContent = 'Connected';
+      connectionStatus.textContent = '接続済み';
       connectionStatus.className = 'connection-status connected';
     });
 
     socket.on('disconnect', () => {
       console.log('Disconnected from server');
-      connectionStatus.textContent = 'Disconnected';
+      connectionStatus.textContent = '切断';
       connectionStatus.className = 'connection-status disconnected';
     });
 
     socket.on('connect_error', (error) => {
       console.error('Connection error:', error);
-      connectionStatus.textContent = 'Connection Error';
+      connectionStatus.textContent = '接続エラー';
       connectionStatus.className = 'connection-status disconnected';
     });
 
@@ -61,6 +281,20 @@
       console.log('Received alert:', data);
       if (typeof handleAlert === 'function') {
         handleAlert(data);
+      }
+    });
+
+    socket.on('settingChange', (data) => {
+      console.log('Setting changed:', data);
+      if (typeof handleSettingChange === 'function') {
+        handleSettingChange(data);
+      }
+    });
+
+    socket.on('personalityUpdate', (data) => {
+      console.log('Personality updated:', data);
+      if (typeof handlePersonalityUpdate === 'function') {
+        handlePersonalityUpdate(data);
       }
     });
   </script>
